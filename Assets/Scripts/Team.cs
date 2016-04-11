@@ -54,11 +54,14 @@ public class Team : MonoBehaviour {
 			indeces.RemoveAt (index);
 		}
 
+		float colorHue = Random.value;
+
 		for (int i = 0; i < 4; i++) {
 			GameObject playerInstance = (GameObject) Instantiate (playerPrefab, waitLocation, Quaternion.identity);
 
 			Player thisPlayer = playerInstance.GetComponent (typeof(Player)) as Player;
 			thisPlayer.moveTo (waitLocation);
+			thisPlayer.SetColor (colorHue);
 			players.Add ( thisPlayer );
 		}
 	}
@@ -116,7 +119,9 @@ public class Team : MonoBehaviour {
 		}
 	}
 
-
+	/********************************************/
+	/*			State Machine Functions			*/
+	/********************************************/
 
 	void EnterState_Waiting() {
 		//Debug.Log (teamName + " is waiting.");

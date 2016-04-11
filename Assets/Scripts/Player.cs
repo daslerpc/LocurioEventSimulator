@@ -3,6 +3,13 @@ using System.Collections;
 
 public class Player : MonoBehaviour {
 
+	public enum SwapIndex
+	{
+		TeamColor = 56,
+		TeamColorHighlight = 128,
+		TeamColorShading = 32
+	}
+
 	public float moveSpeed;
 
 	public Animator anim;
@@ -14,9 +21,36 @@ public class Player : MonoBehaviour {
 
 	private Vector3 moveTarget;
 
+	Texture2D mColorSwapTex;
+	Color[] mSpriteColors;
+	SpriteRenderer mSpriteRenderer;
+
+	/******************/
+	/*  Color Values  */
+	/******************/
+
+	float hue = 0f;
+	float mainSat = 1.0f;
+	float mainVal = 0.53f;
+	float highlightSat = 0.73f;
+	float highlightVal = 0.82f;
+	float shadingSat = 0.75f;
+	float shadingVal = 0.25f;
+
+	/******************/
+
 	// Use this for initialization
 	void Start () {
 		anim = GetComponent<Animator>();
+		mSpriteRenderer = GetComponent<SpriteRenderer> ();
+
+		InitColorSwapTex ();
+
+		SwapColor (SwapIndex.TeamColor, Color.HSVToRGB(hue, mainSat, mainVal));
+		SwapColor (SwapIndex.TeamColorHighlight, Color.HSVToRGB(hue, highlightSat, highlightVal));
+		SwapColor (SwapIndex.TeamColorShading, Color.HSVToRGB(hue, shadingSat, shadingVal));
+
+		mColorSwapTex.Apply ();
 	}
 	
 	// Update is called once per frame
@@ -70,5 +104,29 @@ public class Player : MonoBehaviour {
 
 	public void resetDestinationReached() {
 		destinationReached = false;
+	}
+
+	public void InitColorSwapTex() {
+		Texture2D colorSwapTex = new Texture2D (256, 1, TextureFormat.RGBA32, false, false);
+		colorSwapTex.filterMode = FilterMode.Point;
+
+		for (int i = 0; i < colorSwapTex.width; ++i)
+			colorSwapTex.SetPixel (i, 0, new Color (0.0f, 0.0f, 0.0f, 0.0f));
+
+		colorSwapTex.Apply ();
+
+		mSpriteRenderer.material.SetTexture ("_SwapTex", colorSwapTex);
+
+		mSpriteColors = new Color[colorSwapTex.width];
+		mColorSwapTex = colorSwapTex;
+	}
+
+	public void SwapColor( SwapIndex index, Color color) {
+		mSpriteColors [(int)index] = color;
+		mColorSwapTex.SetPixel ((int)index, 0, color);
+	}
+
+	public void SetColor( float newHue ) {
+		hue = newHue;
 	}
 }
