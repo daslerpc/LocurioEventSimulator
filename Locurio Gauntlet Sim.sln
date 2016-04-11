@@ -1,0 +1,23 @@
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2008
+
+Project("{1B6ABF85-34B8-29E5-E0FD-8087FADB3626}") = "Locurio Gauntlet Sim", "Assembly-CSharp.csproj", "{B595DF51-0F63-C64D-D63D-757E1E70478E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B595DF51-0F63-C64D-D63D-757E1E70478E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B595DF51-0F63-C64D-D63D-757E1E70478E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B595DF51-0F63-C64D-D63D-757E1E70478E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B595DF51-0F63-C64D-D63D-757E1E70478E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		StartupItem = Assembly-CSharp.csproj
+	EndGlobalSection
+EndGlobal
