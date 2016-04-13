@@ -16,13 +16,6 @@ public class Puzzle {
 	List<GameObject> tables = new List<GameObject>();
 	string[] tableOccupants;
 
-	public Puzzle() {
-		tableOccupants = new string[teamsSupported];
-
-		for (int i = 0; i < tableOccupants.Length; i++)
-			tableOccupants [i] = "";
-	}
-
 	public GameObject addTeam(string teamName) {
 		GameObject table = null;
 		int index = 0;
@@ -40,20 +33,25 @@ public class Puzzle {
 
 	public int indexOfFirstFreeTable() {
 		int index = 0;
-		while (!tableOccupants [index].Equals(""))
+
+		while (!tableOccupants [index].Equals ("")) {			
 			index++;
+		}
+		
 		return index;
 	}
 
 	public void removeTeam(string teamName) {
 		numTeamsSolving--;
 
-		if (numTeamsSolving < 0)
+		if (numTeamsSolving < 0) {
 			numTeamsSolving = 0;
+		}
 
 		int index = 0;
-		while (!tableOccupants [index].Equals (teamName))
+		while (!tableOccupants [index].Equals (teamName)) {
 			index++;
+		}
 
 		tableOccupants [index] = "";
 	}
@@ -84,6 +82,11 @@ public class Puzzle {
 
 	public void setNumberOfSupportedTeams( int numTables ) {
 		teamsSupported = numTables;
+
+		tableOccupants = new string[teamsSupported];
+
+		for (int i = 0; i < tableOccupants.Length; i++)
+			tableOccupants [i] = "";
 	}
 
 	public void addTable(GameObject table) {

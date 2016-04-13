@@ -59,7 +59,7 @@ public class Player : MonoBehaviour {
 		float horiz = 0;
 		float vert = 0;
 
-		float velocity = moveSpeed * GameController.getDeltaTime ();
+		float velocity = moveSpeed * (float) GameController.getDeltaTime ();
 
 		if (!transform.Equals (moveTarget)) {
 			// move to target

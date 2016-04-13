@@ -16,16 +16,16 @@ public class Team : MonoBehaviour {
 	List<Player> players;
 	List<Puzzle> remainingPuzzles;
 
-	float puzzleProgress;
-	float timeToSolve;
+	double puzzleProgress;
+	double timeToSolve;
 	Puzzle currentPuzzle = null;
 
-	float timeSpentWaiting = 0;
-	float timeSpentSolving = 0;
-	float waitPerPuzzle = 0;
+	double timeSpentWaiting = 0;
+	double timeSpentSolving = 0;
+	double waitPerPuzzle = 0;
 
-	float quickestSolve = float.MaxValue;
-	float slowestSolve = 0;
+	double quickestSolve = double.MaxValue;
+	double slowestSolve = 0;
 
 	Vector3 waitLocation;
 
@@ -60,10 +60,11 @@ public class Team : MonoBehaviour {
 			GameObject playerInstance = (GameObject) Instantiate (playerPrefab, waitLocation, Quaternion.identity);
 
 			Player thisPlayer = playerInstance.GetComponent (typeof(Player)) as Player;
-			thisPlayer.moveTo (waitLocation);
 			thisPlayer.SetColor (colorHue);
 			players.Add ( thisPlayer );
 		}
+
+		EnterState_Waiting ();
 	}
 		
 	
@@ -124,20 +125,20 @@ public class Team : MonoBehaviour {
 	/********************************************/
 
 	void EnterState_Waiting() {
-		//Debug.Log (teamName + " is waiting.");
 		currentState = State.Waiting;
-
+		waitPerPuzzle = 0;
 		goHome ();
 	}
 
 	void ProcessState_Waiting() {
 		currentPuzzle = findOpenPuzzle ();
 
-		timeSpentWaiting += GameController.getDeltaTime ();
-		waitPerPuzzle += GameController.getDeltaTime ();
-
-		if (currentPuzzle != null)
+		if (currentPuzzle != null) {
 			EnterState_SolvingPuzzle ();
+		} else {
+			timeSpentWaiting += GameController.getDeltaTime ();
+			waitPerPuzzle += GameController.getDeltaTime ();
+		}
 	}
 
 
@@ -145,13 +146,11 @@ public class Team : MonoBehaviour {
 
 
 	void EnterState_SolvingPuzzle() {
-		//Debug.Log (teamName + " working on " + currentPuzzle.getName ());
-
+		
 		currentState = State.SolvingPuzzle;
 		GameObject table = currentPuzzle.addTeam (teamName);
 
 		Transform[] positions = table.GetComponentsInChildren<Transform> ();
-
 
 		int randomVal = Random.Range (0, 2);
 
@@ -172,7 +171,6 @@ public class Team : MonoBehaviour {
 
 		if (timeToSolve > slowestSolve)
 			slowestSolve = timeToSolve;
-
 
 		GameController.reportWaitPerPuzzle (waitPerPuzzle);
 		waitPerPuzzle = 0;
@@ -215,7 +213,6 @@ public class Team : MonoBehaviour {
 		goHome ();
 		GameController.reportTeamDone ();
 		GameController.reportCompletionTime (timeSpentWaiting + timeSpentSolving);
-		//Debug.Log (teamName + ":  Skill:"+ teamSkill+" Slowest:" + Mathf.RoundToInt (slowestSolve) + " Fastest:" + Mathf.RoundToInt (quickestSolve) + " Waiting:" + Mathf.RoundToInt (timeSpentWaiting) + " Solving:" + Mathf.RoundToInt (timeSpentSolving) + " Total:" + Mathf.RoundToInt(timeSpentWaiting + timeSpentSolving));
 	}
 
 	void ProcessState_Done() {

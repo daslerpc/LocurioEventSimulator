@@ -13,7 +13,7 @@ public class GameController : MonoBehaviour {
 	public GameObject teamPrefab;
 	public GameObject tablePrefab;
 
-	public static int timeMultiplier = 1;
+	public static double timeMultiplier = 1.0;
 	static bool paused = false;
 
 	/*********************************/
@@ -36,13 +36,14 @@ public class GameController : MonoBehaviour {
 	int maxSupportedTeams = 0;
 
 	static int teamsDone = 0;
+	static int timesWaited = 0;
 
-	static float fastestTime = float.MaxValue;
-	static float slowestTime = 0;
-	static float averageTime = 0;
-	static float shortestWait = float.MaxValue;
-	static float longestWait = 0;
-	static float averageWait = 0;
+	static double fastestTime = float.MaxValue;
+	static double slowestTime = 0;
+	static double averageTime = 0;
+	static double shortestWait = double.MaxValue;
+	static double longestWait = 0;
+	static double averageWait = 0;
 
 	/*********************************/
 
@@ -103,6 +104,7 @@ public class GameController : MonoBehaviour {
 		tablesPerPuzzle = 4;
 
 		teamsDone = 0;
+		timesWaited = 0;
 
 		fastestTime = float.MaxValue;
 		slowestTime = 0;
@@ -192,7 +194,7 @@ public class GameController : MonoBehaviour {
 		return puzzles;
 	}
 
-	public static float getDeltaTime() {
+	public static double getDeltaTime() {
 		if (paused)
 			return 0;
 		else
@@ -229,27 +231,31 @@ public class GameController : MonoBehaviour {
 
 
 
-	public static void reportCompletionTime( float time) {
+	public static void reportCompletionTime( double time) {
 		if (time < fastestTime)
 			fastestTime = time ;
 		
 		if (time > slowestTime)
 			slowestTime = time;
 
-		averageTime += time/(float) NumberOfTeams;
+		averageTime += time/(double) NumberOfTeams;
 	}
 
-	public static void reportWaitPerPuzzle( float wait) {
-		if (wait > 0f && wait < shortestWait)
+	public static void reportWaitPerPuzzle( double wait) {
+		double waitThreshold = 0.0;
+
+		timesWaited++;
+
+		if (wait > waitThreshold && wait < shortestWait)
 			shortestWait = wait;
 		
 		if (wait > longestWait)
 			longestWait = wait;
 
-		averageWait += wait/(float) NumberOfTeams / (float) NumberOfPuzzles;
+		averageWait += wait;
 	}
 
-	string returnTimeString( float time ) {
+	string returnTimeString( double time ) {
 		string timeString = "";
 		string units = " minute";
 
@@ -258,8 +264,8 @@ public class GameController : MonoBehaviour {
 			units = " second";
 		}
 
-		time = Mathf.Round (time);
-		timeString = time.ToString ();
+		float floatTime = Mathf.Round ( (float) time );
+		timeString = floatTime.ToString ();
 
 		if (time > 1)
 			units += "s";
@@ -276,9 +282,13 @@ public class GameController : MonoBehaviour {
 		textFields [6].text = returnTimeString(slowestTime);
 		textFields [8].text = returnTimeString(averageTime);
 
+		// This means all waits were 0, which were ignored during the run
+		if (shortestWait > longestWait)
+			shortestWait = 0;
+		
 		textFields [10].text = returnTimeString(shortestWait);
 		textFields [12].text = returnTimeString(longestWait);
-		textFields [14].text = returnTimeString(averageWait);
+		textFields [14].text = returnTimeString(averageWait/(float)Mathf.Max(1, timesWaited));
 
 		resultsPane.enabled = true;
 	}
