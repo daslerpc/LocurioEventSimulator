@@ -95,7 +95,10 @@ public class Player : MonoBehaviour {
 	}
 
 	public void moveTo( Vector3 location ) {
-		moveTarget = location;
+		if (!location.Equals (moveTarget)) {
+			destinationReached = false;
+			moveTarget = location;
+		}
 	}
 
 	public bool getDestinationReached() {
@@ -129,4 +132,5 @@ public class Player : MonoBehaviour {
 	public void SetColor( float newHue ) {
 		hue = newHue;
 	}
+
 }

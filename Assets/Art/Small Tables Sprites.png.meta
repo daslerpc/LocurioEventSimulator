@@ -1,10 +1,11 @@
 fileFormatVersion: 2
 guid: e0395700fb222544e95e0352193adb6a
-timeCreated: 1459895285
+timeCreated: 1462197009
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
     21300000: Small Tables Sprites_0
+    21300002: Harbor Master Table
   serializedVersion: 2
   mipmaps:
     mipMapMode: 0
@@ -66,6 +67,17 @@ TextureImporter:
         - {x: -16, y: -16}
         - {x: 16, y: -16}
         - {x: 16, y: 16}
+    - name: Harbor Master Table
+      rect:
+        serializedVersion: 2
+        x: 187
+        y: 101
+        width: 24
+        height: 45
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
     outline: []
   spritePackingTag: 
   userData: 

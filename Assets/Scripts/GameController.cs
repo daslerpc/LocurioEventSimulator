@@ -12,6 +12,7 @@ public class GameController : MonoBehaviour {
 	public GameObject floorTile;
 	public GameObject teamPrefab;
 	public GameObject tablePrefab;
+	public GameObject masterPrefab;
 
 	public static double timeMultiplier = 1.0;
 	static bool paused = false;
@@ -26,6 +27,10 @@ public class GameController : MonoBehaviour {
 	public static int NumberOfPuzzles = 6;
 	public static int solveTimes = 15;
 	public static int tablesPerPuzzle = 4;
+
+	public static int NumberOfMasters = 1;
+	public static double secondsToProcessPuzzleRequest = 0.5;
+	public static bool autoMasterOfShips = true;
 
 	/*********************************/
 	/*		CALCULATED VALUES	     */
@@ -49,11 +54,13 @@ public class GameController : MonoBehaviour {
 
 	static List<Puzzle> puzzles;
 	List<Team> teams;
+	MasterofShips master;
 
 	// Use this for initialization
 	void Start () {
 		createPuzzles ();
 		buildFloor ();
+		createMastersOfShip ();
 		createTeams ();
 
 		Canvas[] canvases = GetComponentsInChildren<Canvas> (true);
@@ -112,6 +119,13 @@ public class GameController : MonoBehaviour {
 		shortestWait = float.MaxValue;
 		longestWait = 0;
 		averageWait = 0;
+	} 
+
+	void createMastersOfShip() {
+		Vector3 location = new Vector3 (2, roomHeight - roomFloorPadding*floorSquaresPerTable, 0);
+		master = ((GameObject) Instantiate (masterPrefab, location, Quaternion.identity)).GetComponent<MasterofShips>();
+		master.setLocation (location);
+		master.setProcessingTime (secondsToProcessPuzzleRequest);
 	}
 
 	void createPuzzles() {
@@ -143,7 +157,7 @@ public class GameController : MonoBehaviour {
 		}
 
 
-		roomHeight = (NumberOfPuzzles + 2*roomFloorPadding) * floorSquaresPerTable;
+		roomHeight = (NumberOfPuzzles + 2*roomFloorPadding + NumberOfMasters) * floorSquaresPerTable;
 		roomWidth = (maxSupportedTeams + 2*roomFloorPadding) * floorSquaresPerTable;
 	}
 
@@ -185,6 +199,7 @@ public class GameController : MonoBehaviour {
 			thisTeam.setName ("Team " + (i+1));
 			thisTeam.setTeamSkill ( Mathf.Clamp(generateTeamSkill(), 0.1f, 3f) );
 			thisTeam.setTeamConsistency ( Mathf.Clamp(teamConsistency, 0f, 1f));
+			thisTeam.setMasterReference (master);
 
 			teams.Add ( thisTeam );
 		}

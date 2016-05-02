@@ -15,6 +15,9 @@ public class ButtonClick : MonoBehaviour {
 	public InputField solveTimeInput;
 	public InputField tablesPerPuzzleInput;
 
+	public Toggle autoMasterOfShipsInput;
+	public InputField secondsToProcessPuzzleRequestInput;
+
 	static int teamNumber = 20;
 	static float skillSpread = 0.2f;
 	static float consistency = 0.2f;
@@ -22,6 +25,9 @@ public class ButtonClick : MonoBehaviour {
 	static int puzzNumber = 6;
 	static int solveTime = 10;
 	static int tablesPerPuzzle = 4;
+
+	static bool autoMasterOfShips = true;
+	static double secondsToProcessPuzzleRequest = 0.5;
 
 	void LoadData() {
 		teamNumber = int.Parse( teamNumberInput.text );
@@ -31,6 +37,9 @@ public class ButtonClick : MonoBehaviour {
 		puzzNumber = int.Parse( puzzNumberInput.text );
 		solveTime = int.Parse( solveTimeInput.text );
 		tablesPerPuzzle = int.Parse( tablesPerPuzzleInput.text );
+
+		autoMasterOfShips = autoMasterOfShipsInput.isOn;
+		secondsToProcessPuzzleRequest = int.Parse( secondsToProcessPuzzleRequestInput.text );
 	}
 
 	void WriteDataToGameController() {
@@ -41,6 +50,9 @@ public class ButtonClick : MonoBehaviour {
 		GameController.NumberOfPuzzles = puzzNumber;
 		GameController.solveTimes = solveTime;
 		GameController.tablesPerPuzzle = tablesPerPuzzle;
+
+		GameController.autoMasterOfShips = autoMasterOfShips;
+		GameController.secondsToProcessPuzzleRequest = secondsToProcessPuzzleRequest/60.0;
 	}
 
 	public void LoadScene( ) {
