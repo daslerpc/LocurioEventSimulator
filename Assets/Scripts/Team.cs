@@ -5,15 +5,16 @@ using System.Collections.Generic;
 public class Team : MonoBehaviour {
 
 	enum State{
-		Waiting,
-		SolvingPuzzle,
+		Start,
 		MovingToPuzzle,
-		WaitingOnMaster,
+		WorkingOnPuzzle,
+		MovingToMaster,
+		WaitingInMasterLine,
 		DealingWithMaster,
-		Done
+		FinishedWithEvent
 	};
 
-	State currentState = State.Waiting;
+	State currentState = State.Start;
 
 	List<Player> players;
 	List<Puzzle> remainingPuzzles;
@@ -22,9 +23,9 @@ public class Team : MonoBehaviour {
 	double timeToSolve;
 	Puzzle currentPuzzle = null;
 
-	double timeSpentWaiting = 0;
+	double timeSpentWaiting = 0;  // total time spent waiting for puzzles
 	double timeSpentSolving = 0;
-	double waitPerPuzzle = 0;
+	double waitPerPuzzle = 0;  // tracks time waited on each puzzle
 	double waitOnMaster = 0;
 
 	double quickestSolve = double.MaxValue;
@@ -37,8 +38,6 @@ public class Team : MonoBehaviour {
 	string teamName = "Team Name";
 	float teamSkill = 1;
 	float puzzleSTDev = 0.2f;
-
-	bool needToVisitMaster = false;
 
 	MasterofShips master = null;
 	int lineIndex = -1;
@@ -72,27 +71,43 @@ public class Team : MonoBehaviour {
 			players.Add ( thisPlayer );
 		}
 
-		EnterState_Waiting ();
+		currentPuzzle = findOpenPuzzle ();
+		EnterState_MovingToPuzzle ();
 	}
 		
+
 	
 	// Update is called once per frame
+
+	/* States:
+ 		MovingToPuzzle,
+		WorkingOnPuzzle,
+		MovingToMaster,
+		WaitingInMasterLine,
+		DealingWithMaster,
+		FinishedWithEvent
+	*/
 	void Update () {
 		switch (currentState) {
-		case State.Waiting:
-			ProcessState_Waiting ();
+		case State.MovingToPuzzle:
+			ProcessState_MovingToPuzzle ();
 			break;
-		case State.SolvingPuzzle:
-			ProcessState_SolvingPuzzle ();
+		case State.WorkingOnPuzzle :
+			ProcessState_WorkingOnPuzzle ();
 			break;
-		case State.WaitingOnMaster:
-			ProcessState_WaitingOnMaster ();
+		case State.MovingToMaster:
+			ProcessState_MovingToMaster ();
 			break;
-		case State.DealingWithMaster:
+		case State.WaitingInMasterLine :
+			ProcessState_WaitingInMasterLine ();
+			break;
+		case State.DealingWithMaster :
 			ProcessState_DealingWithMaster ();
 			break;
+		case State.FinishedWithEvent:
+			ProcessState_FinishedWithEvent ();
+			break;
 		}
-
 	}
 
 
@@ -151,35 +166,43 @@ public class Team : MonoBehaviour {
 		return reached;
 	}
 
+	void incrementPuzzleWaitTimers() {
+		timeSpentWaiting += GameController.getDeltaTime ();
+		waitPerPuzzle += GameController.getDeltaTime ();
+	}
+
+	void incrementSolveTimers() {
+		puzzleProgress += GameController.getDeltaTime();
+		timeSpentSolving += GameController.getDeltaTime ();
+	}
+
+	void incrementMasterWaitTimers() {
+		waitOnMaster += GameController.getDeltaTime ();
+	}
+
 	/********************************************/
 	/*			State Machine Functions			*/
 	/********************************************/
 
-	void EnterState_Waiting() {
-		//Debug.Log (teamName + " entering state WAITING");
-		currentState = State.Waiting;
-		waitPerPuzzle = 0;
-		goHome ();
-	}
 
-	void ProcessState_Waiting() {
-		currentPuzzle = findOpenPuzzle ();
-
-		if (currentPuzzle != null) {
-			EnterState_SolvingPuzzle ();
-		} else {
-			timeSpentWaiting += GameController.getDeltaTime ();
-			waitPerPuzzle += GameController.getDeltaTime ();
-		}
-	}
+	/* States:
+	MovingToPuzzle,
+	WorkingOnPuzzle,
+	MovingToMaster,
+	WaitingInMasterLine,
+	DealingWithMaster,
+	FinishedWithEvent
+	*/
 
 
 
+	/************************************/
+	/*		 MovingToPuzzle State		*/
+	/************************************/
 
-
-	void EnterState_SolvingPuzzle() {
-		//Debug.Log (teamName + " entering state SOLVING");
-		currentState = State.SolvingPuzzle;
+	void EnterState_MovingToPuzzle() {
+		Debug.Log (teamName + " entering state MOVING TO PUZZLE");
+		currentState = State.MovingToPuzzle;
 		GameObject table = currentPuzzle.addTeam (teamName);
 
 		Transform[] positions = table.GetComponentsInChildren<Transform> ();
@@ -194,7 +217,26 @@ public class Team : MonoBehaviour {
 
 			players [index].moveTo (positions [i + 1].position);
 		}
+	}
+		
+	void ProcessState_MovingToPuzzle(){
+		if (destinationReached ())
+			EnterState_WorkingOnPuzzle ();
+	}
 
+	Vector3 masterLineIndexToLocation( int index ) {
+		float padding = 0.75f;
+		return master.getLocation () + Vector3.right * (index + 1) * (1 + padding);
+	}
+
+
+
+	/************************************/
+	/*		 WorkingOnPuzzle State		*/
+	/************************************/
+
+	void EnterState_WorkingOnPuzzle() {
+		Debug.Log (teamName + " entering state WORKING ON PUZZLE");
 		puzzleProgress = 0;
 		timeToSolve = Mathf.Max(1, GameController.gaussianFloat(currentPuzzle.getSolveTime () * teamSkill, currentPuzzle.getSolveTime () * puzzleSTDev));
 
@@ -206,11 +248,12 @@ public class Team : MonoBehaviour {
 
 		GameController.reportWaitPerPuzzle (waitPerPuzzle);
 		waitPerPuzzle = 0;
+
+		currentState = State.WorkingOnPuzzle;
 	}
 
-	void ProcessState_SolvingPuzzle() {
-		puzzleProgress += GameController.getDeltaTime();
-		timeSpentSolving += GameController.getDeltaTime ();
+	void ProcessState_WorkingOnPuzzle(){
+		incrementSolveTimers ();
 
 		if (puzzleProgress >= timeToSolve) {
 			currentPuzzle.removeTeam (teamName);
@@ -218,9 +261,9 @@ public class Team : MonoBehaviour {
 			currentPuzzle = null;
 
 			if (remainingPuzzles.Count == 0)
-				EnterState_Done ();
+				EnterState_FinishedWithEvent ();
 			else {
-				EnterState_WaitingOnMaster ();
+				EnterState_MovingToMaster ();
 			}
 		}
 	}
@@ -229,28 +272,58 @@ public class Team : MonoBehaviour {
 
 
 
-	void EnterState_MovingToPuzzle() {
-		//Debug.Log (teamName + " entering state MOVING TO PUZZLE");
-		currentState = State.MovingToPuzzle;
-	}
-		
-	void ProcessState_MovingToPuzzle() {
+	/************************************/
+	/*	 	 MovingToMaster State		*/
+	/************************************/
+
+	void EnterState_MovingToMaster() {
+		Debug.Log (teamName + " entering state MOVING TO MASTER");
+
+		currentState = State.MovingToMaster;
 	}
 
-	void EnterState_WaitingOnMaster() {
-		//Debug.Log (teamName + " entering state WAITING ON MASTER");
-		currentState = State.WaitingOnMaster;
+	void ProcessState_MovingToMaster(){
+
+		int index = master.getLastFreeLineIndex ();
+		Vector3 location = masterLineIndexToLocation (index);
+
+		if( index != lineIndex) {
+			goToLocation (location);
+			lineIndex = index;
+		}
+			
+		if (destinationReached ()) {
+			if (lineIndex == 0)
+				EnterState_DealingWithMaster ();
+			else
+				EnterState_WaitingInMasterLine ();
+		}
+
 	}
 
-	void ProcessState_WaitingOnMaster() {
+
+
+
+
+	/************************************/
+	/*		WaitingInMasterLine State	*/
+	/************************************/
+
+	void EnterState_WaitingInMasterLine() {
+		Debug.Log (teamName + " entering state WAITING IN MASTER LINE");
+
+		currentState = State.WaitingInMasterLine;
+	}
+
+	void ProcessState_WaitingInMasterLine(){
 		int index = master.getLineIndex (teamName);
-		float padding = 0.75f;
+		Vector3 location = masterLineIndexToLocation (index);
+
+		incrementMasterWaitTimers ();
 
 		if (index != lineIndex) {
-			
-			goToLocation (master.getLocation () + Vector3.right * (index + 1) * (1 + padding) );
+			goToLocation (location);
 			if (index == 0) {
-				lineIndex = -1;
 				EnterState_DealingWithMaster ();
 			} else {
 				lineIndex = index;
@@ -258,30 +331,52 @@ public class Team : MonoBehaviour {
 		}
 	}
 
+
+
+
+
+	/************************/
+	/*		DealingWithMaster State		*/
+	/************************/
+
 	void EnterState_DealingWithMaster() {
-		//Debug.Log (teamName + " entering state DEALING WITH MASTER");
+		Debug.Log (teamName + " entering state DEALING WITH MASTER");
+		lineIndex = -1;
 		currentState = State.DealingWithMaster;
 	}
 
-	void ProcessState_DealingWithMaster() {
-		if (destinationReached ()) {
-			master.startProcessing (); // This gets called every frame but only needs to happen once
-		}
+	void ProcessState_DealingWithMaster(){
+		incrementPuzzleWaitTimers ();
 
-		if (master.getLineIndex (teamName) == -1) {
-			EnterState_Waiting ();
+		currentPuzzle = findOpenPuzzle ();
+
+		if (currentPuzzle != null ) {
+			master.startProcessing();
+			if ( master.getLineIndex( teamName ) == -1 )
+				EnterState_MovingToPuzzle ();
 		}
 	}
-		
-	void EnterState_Done() {
-		//Debug.Log(teamName + " entering state DONE");
-		currentState = State.Done;
+
+
+
+
+
+	/************************/
+	/*		FinishedWithEvent State		*/
+	/************************/
+
+	void EnterState_FinishedWithEvent() {
+		Debug.Log (teamName + " entering state FINISHED WITH EVENT");
+
 		goHome ();
 		GameController.reportTeamDone ();
 		GameController.reportCompletionTime (timeSpentWaiting + timeSpentSolving);
+		GameController.reportMasterWaitTime ( waitOnMaster );
+
+		currentState = State.FinishedWithEvent;
 	}
 
-	void ProcessState_Done() {
+	void ProcessState_FinishedWithEvent(){
 	}
-
+		
 }

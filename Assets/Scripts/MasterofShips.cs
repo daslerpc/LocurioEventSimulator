@@ -47,6 +47,10 @@ public class MasterofShips : MonoBehaviour {
 		}	
 	}
 
+	public int getLastFreeLineIndex() {
+		return waitingTeams.Count;
+	}
+
 	public void setLocation( Vector3 locationIn) {
 		location = locationIn;
 	}

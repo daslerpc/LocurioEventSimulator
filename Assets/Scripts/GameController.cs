@@ -43,12 +43,15 @@ public class GameController : MonoBehaviour {
 	static int teamsDone = 0;
 	static int timesWaited = 0;
 
-	static double fastestTime = float.MaxValue;
-	static double slowestTime = 0;
-	static double averageTime = 0;
-	static double shortestWait = double.MaxValue;
-	static double longestWait = 0;
-	static double averageWait = 0;
+	static double fastestPuzzleTime = float.MaxValue;
+	static double slowestPuzzleTime = 0;
+	static double averagePuzzleTime = 0;
+	static double shortestPuzzleWait = double.MaxValue;
+	static double longestPuzzleWait = 0;
+	static double averagePuzzleWait = 0;
+	static double shortestMasterWait = double.MaxValue;
+	static double longestMasterWait = 0;
+	static double averageMasterWait = 0;
 
 	/*********************************/
 
@@ -113,12 +116,15 @@ public class GameController : MonoBehaviour {
 		teamsDone = 0;
 		timesWaited = 0;
 
-		fastestTime = float.MaxValue;
-		slowestTime = 0;
-		averageTime = 0;
-		shortestWait = float.MaxValue;
-		longestWait = 0;
-		averageWait = 0;
+		fastestPuzzleTime = double.MaxValue;
+		slowestPuzzleTime = 0;
+		averagePuzzleTime = 0;
+		shortestPuzzleWait = double.MaxValue;
+		longestPuzzleWait = 0;
+		averagePuzzleWait = 0;
+		shortestMasterWait = double.MaxValue;
+		longestMasterWait = 0;
+		averageMasterWait = 0;
 	} 
 
 	void createMastersOfShip() {
@@ -247,13 +253,13 @@ public class GameController : MonoBehaviour {
 
 
 	public static void reportCompletionTime( double time) {
-		if (time < fastestTime)
-			fastestTime = time ;
+		if (time < fastestPuzzleTime)
+			fastestPuzzleTime = time ;
 		
-		if (time > slowestTime)
-			slowestTime = time;
+		if (time > slowestPuzzleTime)
+			slowestPuzzleTime = time;
 
-		averageTime += time/(double) NumberOfTeams;
+		averagePuzzleTime += time/(double) NumberOfTeams;
 	}
 
 	public static void reportWaitPerPuzzle( double wait) {
@@ -261,13 +267,25 @@ public class GameController : MonoBehaviour {
 
 		timesWaited++;
 
-		if (wait > waitThreshold && wait < shortestWait)
-			shortestWait = wait;
+		if (wait > waitThreshold && wait < shortestPuzzleWait)
+			shortestPuzzleWait = wait;
 		
-		if (wait > longestWait)
-			longestWait = wait;
+		if (wait > longestPuzzleWait)
+			longestPuzzleWait = wait;
 
-		averageWait += wait;
+		averagePuzzleWait += wait;
+	}
+
+	public static void reportMasterWaitTime( double wait ) {
+		double waitThreshold = 0.0;
+
+		if (wait > waitThreshold && wait < shortestMasterWait)
+			shortestMasterWait = wait;
+
+		if (wait > longestMasterWait)
+			longestMasterWait = wait;
+
+		averageMasterWait += wait;
 	}
 
 	string returnTimeString( double time ) {
@@ -293,17 +311,17 @@ public class GameController : MonoBehaviour {
 
 		Text[] textFields = resultsPane.GetComponentsInChildren<Text> ();
 
-		textFields [4].text = returnTimeString(fastestTime);
-		textFields [6].text = returnTimeString(slowestTime);
-		textFields [8].text = returnTimeString(averageTime);
+		textFields [4].text = returnTimeString(fastestPuzzleTime);
+		textFields [6].text = returnTimeString(slowestPuzzleTime);
+		textFields [8].text = returnTimeString(averagePuzzleTime);
 
 		// This means all waits were 0, which were ignored during the run
-		if (shortestWait > longestWait)
-			shortestWait = 0;
+		if (shortestPuzzleWait > longestPuzzleWait)
+			shortestPuzzleWait = 0;
 		
-		textFields [10].text = returnTimeString(shortestWait);
-		textFields [12].text = returnTimeString(longestWait);
-		textFields [14].text = returnTimeString(averageWait/(float)Mathf.Max(1, timesWaited));
+		textFields [10].text = returnTimeString(shortestPuzzleWait);
+		textFields [12].text = returnTimeString(longestPuzzleWait);
+		textFields [14].text = returnTimeString(averagePuzzleWait/(float)Mathf.Max(1, timesWaited));
 
 		resultsPane.enabled = true;
 	}
