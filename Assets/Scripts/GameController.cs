@@ -59,6 +59,10 @@ public class GameController : MonoBehaviour {
 	List<Team> teams;
 	MasterofShips master;
 
+	Canvas PauseOverlay;
+	Canvas ResultsPane;
+	Canvas Passport;
+
 	// Use this for initialization
 	void Start () {
 		createPuzzles ();
@@ -70,6 +74,10 @@ public class GameController : MonoBehaviour {
 
 		for( int i=0; i<canvases.Length; i++)
 			canvases[i].enabled = false;
+
+		PauseOverlay = canvases [0];
+		ResultsPane = canvases [1];
+		Passport  = canvases [2];
 	}
 
 	// Update is called once per frame
@@ -85,9 +93,9 @@ public class GameController : MonoBehaviour {
 				timeMultiplier = 1;
 		}
 
-		if (Input.GetKeyUp (KeyCode.Space) && GetComponentsInChildren<Canvas> (true) [1].enabled == false) {
+		if (Input.GetKeyUp (KeyCode.Space) && ResultsPane.enabled == false) {
 			paused = !paused;
-			GetComponentInChildren<Canvas> ().enabled = paused;
+			PauseOverlay.enabled = paused;
 		}
 
 		if (Input.GetKeyUp (KeyCode.Escape)) {
@@ -168,9 +176,7 @@ public class GameController : MonoBehaviour {
 	}
 
 	void buildFloor () {
-		Camera cam = GetComponentInChildren <Camera> ();
-		cam.orthographicSize = Mathf.Max(roomHeight, roomWidth)/2.0f + 0.5f;
-		cam.transform.position = new Vector3 (roomWidth/2f - 0.5f, roomHeight/2f - 0.5f, -10);
+		setCamera ();
 
 		for (int i = 0; i < roomWidth; i++)
 			for (int j = 0; j < roomHeight; j++) {
@@ -178,6 +184,11 @@ public class GameController : MonoBehaviour {
 			}
 	}
 
+	void setCamera() {
+		Camera cam = GetComponentInChildren <Camera> ();
+		cam.orthographicSize = roomHeight/2.0f + 0.5f;
+		cam.transform.position = new Vector3 (roomWidth/2f - 2.0f/3.0f*cam.orthographicSize + 2f, roomHeight/2f - 0.5f, -10);
+	}
 
 	void createTeams() {
 		teams = new List<Team>();
@@ -248,6 +259,7 @@ public class GameController : MonoBehaviour {
 
 	public static void reportTeamDone() {
 		teamsDone++;
+		Debug.Log(teamsDone + " of " + NumberOfTeams + " teams done.");
 	}
 
 
@@ -307,9 +319,7 @@ public class GameController : MonoBehaviour {
 	}
 
 	void endSim() {
-		Canvas resultsPane = GetComponentsInChildren<Canvas> (true) [1];
-
-		Text[] textFields = resultsPane.GetComponentsInChildren<Text> ();
+		Text[] textFields = ResultsPane.GetComponentsInChildren<Text> ();
 
 		textFields [4].text = returnTimeString(fastestPuzzleTime);
 		textFields [6].text = returnTimeString(slowestPuzzleTime);
@@ -323,7 +333,7 @@ public class GameController : MonoBehaviour {
 		textFields [12].text = returnTimeString(longestPuzzleWait);
 		textFields [14].text = returnTimeString(averagePuzzleWait/(float)Mathf.Max(1, timesWaited));
 
-		resultsPane.enabled = true;
+		ResultsPane.enabled = true;
 	}
 }
  

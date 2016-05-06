@@ -71,8 +71,12 @@ public class Team : MonoBehaviour {
 			players.Add ( thisPlayer );
 		}
 
-		currentPuzzle = findOpenPuzzle ();
-		EnterState_MovingToPuzzle ();
+		currentPuzzle = master.requestPuzzle ( remainingPuzzles );
+
+		if (currentPuzzle != null)
+			EnterState_MovingToPuzzle ();
+		else
+			EnterState_MovingToMaster ();
 	}
 		
 
@@ -110,7 +114,7 @@ public class Team : MonoBehaviour {
 		}
 	}
 
-
+	/*
 	Puzzle findOpenPuzzle() {
 		Puzzle nextPuzzle = null;
 
@@ -123,7 +127,7 @@ public class Team : MonoBehaviour {
 
 		return nextPuzzle;
 	}
-
+*/
 	public void setName(string newName) {
 		teamName = newName;
 	}
@@ -180,6 +184,11 @@ public class Team : MonoBehaviour {
 		waitOnMaster += GameController.getDeltaTime ();
 	}
 
+	Vector3 masterLineIndexToLocation( int index ) {
+		float padding = 0.75f;
+		return master.getLocation () + Vector3.right * (index + 1) * (1 + padding);
+	}
+
 	/********************************************/
 	/*			State Machine Functions			*/
 	/********************************************/
@@ -224,10 +233,6 @@ public class Team : MonoBehaviour {
 			EnterState_WorkingOnPuzzle ();
 	}
 
-	Vector3 masterLineIndexToLocation( int index ) {
-		float padding = 0.75f;
-		return master.getLocation () + Vector3.right * (index + 1) * (1 + padding);
-	}
 
 
 
@@ -348,7 +353,7 @@ public class Team : MonoBehaviour {
 	void ProcessState_DealingWithMaster(){
 		incrementPuzzleWaitTimers ();
 
-		currentPuzzle = findOpenPuzzle ();
+		currentPuzzle = master.requestPuzzle ( remainingPuzzles );
 
 		if (currentPuzzle != null ) {
 			master.startProcessing();

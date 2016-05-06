@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 public class MasterofShips : MonoBehaviour {
 	List<string> waitingTeams;
+
 	Vector3 location;
 
 	double timeToProcess;
@@ -20,6 +21,7 @@ public class MasterofShips : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		waitingTeams = new List<string> ();
+		lastTeam = "";
 	}
 	
 	// Update is called once per frame
@@ -66,4 +68,26 @@ public class MasterofShips : MonoBehaviour {
 	public void startProcessing() {
 		processing = true;
 	}
+
+	public bool getDoneProcessing() {
+		return !processing;
+	}
+
+	public void setDoneProcessing() {
+		processing = false;
+	}
+		
+	public Puzzle requestPuzzle( List<Puzzle> teamProgress ) {
+		Puzzle nextPuzzle = null;
+
+		for (int index = 0; index < teamProgress.Count; index++) {
+			if (teamProgress [index].isFree ()) {
+				nextPuzzle = teamProgress [index];
+				break;
+			}
+		}
+
+		return nextPuzzle;
+	}
+
 }
