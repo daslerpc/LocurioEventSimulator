@@ -298,8 +298,10 @@ public class Team : MonoBehaviour {
 		}
 			
 		if (destinationReached ()) {
-			if (lineIndex == 0)
+			if (lineIndex == 0) {
+				master.getLineIndex ( teamName );
 				EnterState_DealingWithMaster ();
+			}
 			else
 				EnterState_WaitingInMasterLine ();
 		}
@@ -347,6 +349,7 @@ public class Team : MonoBehaviour {
 	void EnterState_DealingWithMaster() {
 		Debug.Log (teamName + " entering state DEALING WITH MASTER");
 		lineIndex = -1;
+		master.startProcessing();
 		currentState = State.DealingWithMaster;
 	}
 
@@ -356,9 +359,7 @@ public class Team : MonoBehaviour {
 		currentPuzzle = master.requestPuzzle ( remainingPuzzles );
 
 		if (currentPuzzle != null ) {
-			master.startProcessing();
-			if ( master.getLineIndex( teamName ) == -1 )
-				EnterState_MovingToPuzzle ();
+			EnterState_MovingToPuzzle ();
 		}
 	}
 
