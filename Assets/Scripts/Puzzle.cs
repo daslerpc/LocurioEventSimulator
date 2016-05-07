@@ -100,4 +100,12 @@ public class Puzzle {
 	public void setSolveTime( int newSolveTime ) {
 		solveTime = newSolveTime;
 	}
+
+	public void setID ( int newID ) {
+		ID = newID;
+	}
+
+	public int getID () {
+		return ID;
+	}
 }

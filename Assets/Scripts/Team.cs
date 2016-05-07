@@ -349,7 +349,7 @@ public class Team : MonoBehaviour {
 	void EnterState_DealingWithMaster() {
 		Debug.Log (teamName + " entering state DEALING WITH MASTER");
 		lineIndex = -1;
-		master.startProcessing();
+		master.startProcessing( teamName, remainingPuzzles );
 		currentState = State.DealingWithMaster;
 	}
 
@@ -359,6 +359,7 @@ public class Team : MonoBehaviour {
 		currentPuzzle = master.requestPuzzle ( remainingPuzzles );
 
 		if (currentPuzzle != null ) {
+			master.stopProcessing ();
 			EnterState_MovingToPuzzle ();
 		}
 	}

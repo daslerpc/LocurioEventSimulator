@@ -24,9 +24,9 @@ public class GameController : MonoBehaviour {
 	public static float skillSTDev = 0.2f;
 	public static float teamConsistency = 0.8f;
 
-	public static int NumberOfPuzzles = 6;
+	public static int NumberOfPuzzles = 5;
 	public static int solveTimes = 15;
-	public static int tablesPerPuzzle = 4;
+	public static int tablesPerPuzzle = 5;
 
 	public static int NumberOfMasters = 1;
 	public static double secondsToProcessPuzzleRequest = 0.5;
@@ -65,11 +65,6 @@ public class GameController : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		createPuzzles ();
-		buildFloor ();
-		createMastersOfShip ();
-		createTeams ();
-
 		Canvas[] canvases = GetComponentsInChildren<Canvas> (true);
 
 		for( int i=0; i<canvases.Length; i++)
@@ -78,6 +73,11 @@ public class GameController : MonoBehaviour {
 		PauseOverlay = canvases [0];
 		ResultsPane = canvases [1];
 		Passport  = canvases [2];
+
+		createPuzzles ();
+		buildFloor ();
+		createMastersOfShip ();
+		createTeams ();
 	}
 
 	// Update is called once per frame
@@ -140,15 +140,39 @@ public class GameController : MonoBehaviour {
 		master = ((GameObject) Instantiate (masterPrefab, location, Quaternion.identity)).GetComponent<MasterofShips>();
 		master.setLocation (location);
 		master.setProcessingTime (secondsToProcessPuzzleRequest);
+		master.setAutomatic (autoMasterOfShips);
+		master.setPassport (Passport);
 	}
 
 	void createPuzzles() {
 		puzzles = new List<Puzzle>();
 		int tableOffset = roomFloorPadding * floorSquaresPerTable + 1;
+		string name = "NAME NOT SET";
 
 		for (int i = 0; i < NumberOfPuzzles; i++) {
 			puzzles.Add (new Puzzle ());	
-			puzzles [i].setName ("Puzzle " + i);
+			//puzzles [i].setName ("Puzzle " + i);
+			puzzles [i].setID (i);
+
+			switch (i) {
+			case 0:
+				name = "the Cave.";
+				break;
+			case 1:
+				name = "the Forest.";
+				break;
+			case 2:
+				name = "the Cliffs.";
+				break;
+			case 3:
+				name = "the Lagoon.";
+				break;
+			case 4:
+				name = "the Mountain.";
+				break;
+			}
+
+			puzzles[i].setName( name );
 
 			/* This code is for when puzzles can have a different number of tables each
 			int numTables = puzzles [i].getNumberOfSupportedTeams ();
