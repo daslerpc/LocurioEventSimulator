@@ -31,6 +31,7 @@ public class GameController : MonoBehaviour {
 	public static int NumberOfMasters = 1;
 	public static double secondsToProcessPuzzleRequest = 0.5;
 	public static bool autoMasterOfShips = true;
+	public static int NumberOfHumanTeams = 1;
 
 	/*********************************/
 	/*		CALCULATED VALUES	     */
@@ -62,6 +63,8 @@ public class GameController : MonoBehaviour {
 	Canvas PauseOverlay;
 	Canvas ResultsPane;
 	Canvas Passport;
+	Canvas HumanPassport;
+	Canvas Controls;
 
 	// Use this for initialization
 	void Start () {
@@ -73,6 +76,10 @@ public class GameController : MonoBehaviour {
 		PauseOverlay = canvases [0];
 		ResultsPane = canvases [1];
 		Passport  = canvases [2];
+		HumanPassport = canvases [3];
+		Controls = canvases [4];
+
+		Controls.enabled = true;
 
 		createPuzzles ();
 		buildFloor ();
@@ -117,9 +124,13 @@ public class GameController : MonoBehaviour {
 		skillSTDev = 0.2f;
 		teamConsistency = 0.8f;
 
-		NumberOfPuzzles = 6;
+		NumberOfPuzzles = 5;
 		solveTimes = 15;
-		tablesPerPuzzle = 4;
+		tablesPerPuzzle = 5;
+
+		secondsToProcessPuzzleRequest = 0.5;
+		autoMasterOfShips = true;
+		NumberOfHumanTeams = 1;
 
 		teamsDone = 0;
 		timesWaited = 0;
@@ -141,7 +152,12 @@ public class GameController : MonoBehaviour {
 		master.setLocation (location);
 		master.setProcessingTime (secondsToProcessPuzzleRequest);
 		master.setAutomatic (autoMasterOfShips);
-		master.setPassport (Passport);
+		master.setPassports (Passport, HumanPassport);
+
+		if (autoMasterOfShips) {
+			Button manAdd = Controls.GetComponentInChildren<Button> ();
+			manAdd.interactable = false;
+		}
 	}
 
 	void createPuzzles() {
@@ -244,6 +260,10 @@ public class GameController : MonoBehaviour {
 
 			teams.Add ( thisTeam );
 		}
+	}
+
+	public void addHumanToMasterLine() {
+		master.addHumanToLine ();
 	}
 
 	public static List<Puzzle> getPuzzles() {

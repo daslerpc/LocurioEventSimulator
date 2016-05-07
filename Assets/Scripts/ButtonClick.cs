@@ -17,6 +17,7 @@ public class ButtonClick : MonoBehaviour {
 
 	public Toggle autoMasterOfShipsInput;
 	public InputField secondsToProcessPuzzleRequestInput;
+	public InputField numberOfHumanTeamsInput;
 
 	static int teamNumber = 20;
 	static float skillSpread = 0.2f;
@@ -28,6 +29,7 @@ public class ButtonClick : MonoBehaviour {
 
 	static bool autoMasterOfShips = true;
 	static double secondsToProcessPuzzleRequest = 0.5;
+	static int numberOfHumanTeams = 1;
 
 	void LoadData() {
 		teamNumber = int.Parse( teamNumberInput.text );
@@ -40,6 +42,7 @@ public class ButtonClick : MonoBehaviour {
 
 		autoMasterOfShips = autoMasterOfShipsInput.isOn;
 		secondsToProcessPuzzleRequest = int.Parse( secondsToProcessPuzzleRequestInput.text );
+		numberOfHumanTeams = int.Parse (numberOfHumanTeamsInput.text);
 	}
 
 	void WriteDataToGameController() {
@@ -53,6 +56,7 @@ public class ButtonClick : MonoBehaviour {
 
 		GameController.autoMasterOfShips = autoMasterOfShips;
 		GameController.secondsToProcessPuzzleRequest = secondsToProcessPuzzleRequest/60.0;
+		GameController.NumberOfHumanTeams = numberOfHumanTeams;
 	}
 
 	public void LoadScene( ) {
@@ -76,6 +80,32 @@ public class ButtonClick : MonoBehaviour {
 		loadingImage.SetActive ( true );
 		GameController.Reset ();
 		SceneManager.LoadScene ("menu");
+	}
+
+	public void updateMasterInputs( bool value ) {
+		Text secondsValue = secondsToProcessPuzzleRequestInput.GetComponentsInChildren<Text> () [0];
+		Text secondsTitle = secondsToProcessPuzzleRequestInput.GetComponentsInChildren<Text> () [1];
+
+		Text humansValue = numberOfHumanTeamsInput.GetComponentsInChildren<Text> () [0];
+		Text humansTitle = numberOfHumanTeamsInput.GetComponentsInChildren<Text> () [1];
+
+	
+		secondsToProcessPuzzleRequestInput.interactable = autoMasterOfShipsInput.isOn;
+		numberOfHumanTeamsInput.interactable = !autoMasterOfShipsInput.isOn;
+
+		if (autoMasterOfShipsInput.isOn) {
+			secondsValue.color = Color.black;
+			secondsTitle.color = Color.black;
+
+			humansValue.color = Color.gray;
+			humansTitle.color = Color.gray;
+		} else {
+			secondsValue.color = Color.gray;
+			secondsTitle.color = Color.gray;
+
+			humansValue.color = Color.black;
+			humansTitle.color = Color.black;
+		}
 	}
 		
 }

@@ -13,15 +13,22 @@ public class MasterofShips : MonoBehaviour {
 
 	bool processing = false;
 	Canvas passport;
+	Canvas humanPassport;
 
 	List<RawImage> stamps;
+	List<RawImage> stampSquares;
+
 	Button approve;
 	Button reject;
+	Button ok;
 
 	Text teamNameDisplay;
 	Text puzzleRequestDisplay;
 
 	bool automatic = true;
+
+	// This is a hack to keep team names unique when adding a human team to the line
+	int humanCounter = 0;
 
 	public MasterofShips( Vector3 location ) {
 		setLocation (location);
@@ -43,19 +50,24 @@ public class MasterofShips : MonoBehaviour {
 		}
 	}
 
-	public void setPassport ( Canvas passportIn ) {
+	public void setPassports ( Canvas passportIn, Canvas humanPassportIn ) {
 		passport = passportIn;
+		humanPassport = humanPassportIn;
+
+		ok = humanPassport.GetComponentInChildren<RawImage> (true).GetComponentInChildren<Button>(true);
 
 		RawImage scroll = passport.GetComponentInChildren<RawImage> (true);
 		RawImage[] images = scroll.GetComponentsInChildren<RawImage> (true);
 
 		stamps = new List<RawImage> ();
-
+		stampSquares = new List<RawImage> ();
 
 		Debug.Log (images.Length);
 
-		for(int i=0; i<5; i++)
-			stamps.Add( images[2*i + 2] );
+		for (int i = 0; i < 5; i++) {
+			stampSquares.Add (images [2 * i + 1]);
+			stamps.Add (images [2 * i + 2]);
+		}
 
 		Button[] buttons = scroll.GetComponentsInChildren<Button> (true);
 		approve = buttons [0];
@@ -137,20 +149,51 @@ public class MasterofShips : MonoBehaviour {
 	}
 
 	void displayPassport( string teamName, List<Puzzle> teamProgress ) {
+		int index;
+
 		passport.enabled = true;
 
-		for (int i = 0; i < teamProgress.Count; i++)
-			stamps [teamProgress [i].getID ()].enabled = false;
+		for (int i = 0; i < teamProgress.Count; i++) {
+			index = teamProgress [i].getID ();
+			stamps [index].enabled = false;
+		}
 
 		teamNameDisplay.text = teamName;
 	}
 
 	void hidePassport() {
+		float offset = 10f;
+		float rotation = 10f;
+
+		Vector3 offsetVector = new Vector3();
+		Vector3 rotVector = new Vector3 ();
+
+
 		for (int i = 0; i < stamps.Count; i++) {
-			stamps [i].enabled = true;
+			stamps[i].enabled = true;
+
+			offsetVector.x = Random.value * 2 * offset - offset;
+			offsetVector.y = Random.value * 2 * offset - offset;
+			stamps[i].transform.position = stampSquares [i].transform.position + offsetVector;
+
+			rotVector.z = Random.value * 2 * rotation - rotation;
+			stamps[i].transform.Rotate ( stampSquares [i].transform.rotation.eulerAngles + rotVector );
 		}
 
 		passport.enabled = false;
+	}
+
+	void displayHumanPassport() {
+		humanPassport.enabled = true;
+	}
+
+	void hideHumanPassport() {
+		humanPassport.enabled = false;
+	}
+
+	public void addHumanToLine() {
+		getLineIndex ("human" + humanCounter.ToString());
+		humanCounter++;
 	}
 
 	public void setAutomatic ( bool automaticIn ) {
