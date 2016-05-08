@@ -135,7 +135,7 @@ public class GameController : MonoBehaviour {
 		solveTimes = 15;
 		tablesPerPuzzle = 5;
 
-		secondsToProcessPuzzleRequest = 0.5;
+		secondsToProcessPuzzleRequest = 15;
 		autoMasterOfShips = true;
 		NumberOfHumanTeams = 1;
 
@@ -240,24 +240,39 @@ public class GameController : MonoBehaviour {
 
 	void createTeams() {
 		teams = new List<Team>();
-		float x = 0;
-		float y = 0;
+
+		float padding = 3;
+		float homePositionPathHeight = (NumberOfPuzzles-1) * floorSquaresPerTable + 1 + padding;
+		float homePositionPathWidth = (maxSupportedTeams - 1) * floorSquaresPerTable + 2*padding + 2;
+
+		float lineLength = 2*homePositionPathHeight + homePositionPathWidth;
+		float stepSize = lineLength / (float) (NumberOfTeams - 1);
+
+		Vector3 position = new Vector3();
+		position.x = 3 * roomFloorPadding - padding;
+		position.y = 3 * roomFloorPadding + homePositionPathHeight - padding;
+
+		float distanceTravelled = 0;
+		Vector3 direction = Vector3.down;
 
 		for (int i = 0; i < NumberOfTeams; i++) {	
-			
-			x = (3*roomFloorPadding + NumberOfPuzzles*floorSquaresPerTable - 2f)*Random.value + 0.5f;
-			y = (3*(NumberOfPuzzles + 2*roomFloorPadding) - 3)*Random.value + 1;
+			Vector3 location = position;
+			distanceTravelled += stepSize;
 
-			while(  x > 3*roomFloorPadding-1 && 
-					y > 3*roomFloorPadding-1 &&
-					x < 3*(roomFloorPadding + maxSupportedTeams)+1 &&
-					y < 3*(roomFloorPadding + NumberOfPuzzles)+1
-			) {
-				x = (3*roomFloorPadding + NumberOfPuzzles*floorSquaresPerTable - 2f)*Random.value + 0.5f;
-				y = (3*(NumberOfPuzzles + 2*roomFloorPadding) - 3)*Random.value + 1;
+			if (direction == Vector3.right && distanceTravelled > homePositionPathHeight + homePositionPathWidth) {
+				float leftOver = distanceTravelled - homePositionPathHeight - homePositionPathWidth;
+				position += direction * (stepSize - leftOver);
+				direction = Vector3.up;
+				position += direction * leftOver;
+			} else if (direction == Vector3.down && distanceTravelled > homePositionPathHeight) {
+				float leftOver = distanceTravelled - homePositionPathHeight;
+				position += direction * (stepSize - leftOver);
+				direction = Vector3.right;
+				position += direction * leftOver;
+			} else {	
+				position += direction * stepSize;
 			}
-
-			Vector3 location = new Vector3 (x, y, 0);
+				
 			GameObject teamInstance = (GameObject) Instantiate (teamPrefab, location, Quaternion.identity);
 
 			Team thisTeam = teamInstance.GetComponent (typeof(Team)) as Team;
@@ -271,20 +286,20 @@ public class GameController : MonoBehaviour {
 	}
 
 	static void speedupTime() {
-		timeExponent+=1;
+		timeExponent = Mathf.Min( timeExponent + 1, 6);
 		timeMultiplier = Mathf.Pow (2f, timeExponent);
 		setTimeDisplay ();
 	}
 
 	static void slowdownTime(){
-		timeExponent-=1;
+		timeExponent = Mathf.Max( timeExponent - 1, -2);
 		timeMultiplier = Mathf.Pow (2f, timeExponent);
 		setTimeDisplay ();
 	}
 
 	static void resetTime() {
 		timeExponent = 0;
-		timeMultiplier = Mathf.Pow (2f, timeExponent);
+		timeMultiplier = 1;
 		setTimeDisplay ();
 	}
 

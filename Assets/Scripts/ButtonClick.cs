@@ -28,7 +28,7 @@ public class ButtonClick : MonoBehaviour {
 	static int tablesPerPuzzle = 4;
 
 	static bool autoMasterOfShips = true;
-	static double secondsToProcessPuzzleRequest = 30;
+	static double secondsToProcessPuzzleRequest = 15;
 	static int numberOfHumanTeams = 1;
 
 	void LoadData() {
