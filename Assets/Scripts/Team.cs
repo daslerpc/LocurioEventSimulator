@@ -166,6 +166,16 @@ public class Team : MonoBehaviour {
 		}
 	}
 
+	public void goToLocation( Vector3 destination, Vector2 facing ) {
+		for (int i = 0; i < 4; i++) {
+			float wiggle = 0.5f;
+			float x = Random.Range (-wiggle, wiggle);
+			float y = Random.Range (-wiggle, wiggle);
+			Vector3 location = destination + new Vector3 (x, y, 0);
+			players [i].moveTo (location, facing);
+		}
+	}
+
 	public bool destinationReached() {
 		bool reached = true;
 		for (int i = 0; i < players.Count; i++)
@@ -232,6 +242,9 @@ public class Team : MonoBehaviour {
 		GameObject table = currentPuzzle.addTeam (teamName);
 
 		Transform[] positions = table.GetComponentsInChildren<Transform> ();
+		Vector3 position;
+		Vector3 facing3;
+		Vector2 facing = new Vector2();
 
 		int randomVal = Random.Range (0, 2);
 
@@ -241,7 +254,12 @@ public class Team : MonoBehaviour {
 			if( randomVal == 1)
 				index = players.Count - i - 1;
 
-			players [index].moveTo (positions [i + 1].position);
+			position = positions [i + 1].position;
+			facing3 = (table.transform.position - position);
+			facing.x = facing3.x;
+			facing.y = facing3.y;
+
+			players [index].moveTo (position, facing);
 		}
 	}
 		
@@ -310,7 +328,7 @@ public class Team : MonoBehaviour {
 		Vector3 location = masterLineIndexToLocation (index);
 
 		if( index != lineIndex) {
-			goToLocation (location);
+			goToLocation (location, Vector2.left);
 			lineIndex = index;
 		}
 			
@@ -346,7 +364,7 @@ public class Team : MonoBehaviour {
 		incrementMasterWaitTimers ();
 
 		if (index != lineIndex) {
-			goToLocation (location);
+			goToLocation (location, Vector2.left);
 			if (index == 0) {
 				EnterState_DealingWithMaster ();
 			} else {

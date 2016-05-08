@@ -19,6 +19,8 @@ public class Player : MonoBehaviour {
 	private bool destinationReached = false;
 	private Vector2 lastMove;
 
+	private Vector2 facing;
+
 	private Vector3 moveTarget;
 
 	Texture2D mColorSwapTex;
@@ -49,7 +51,7 @@ public class Player : MonoBehaviour {
 		SwapColor (SwapIndex.TeamColor, Color.HSVToRGB(hue, mainSat, mainVal));
 		SwapColor (SwapIndex.TeamColorHighlight, Color.HSVToRGB(hue, highlightSat, highlightVal));
 		SwapColor (SwapIndex.TeamColorShading, Color.HSVToRGB(hue, shadingSat, shadingVal));
-
+	
 		mColorSwapTex.Apply ();
 	}
 	
@@ -85,8 +87,13 @@ public class Player : MonoBehaviour {
 			lastMove = new Vector2(0,vert);
 		}
 
-		if (wasMoving == true && PlayerMoving == false)
+		if (wasMoving == true && PlayerMoving == false) {
 			destinationReached = true;
+			if (facing != Vector2.zero) {
+				lastMove = facing;
+				facing = Vector2.zero;
+			}
+		}
 			
 
 		anim.SetFloat ("LastMoveX", lastMove.x);
@@ -99,6 +106,11 @@ public class Player : MonoBehaviour {
 			destinationReached = false;
 			moveTarget = location;
 		}
+	}
+
+	public void moveTo( Vector3 location, Vector2 faceDirection ) {
+		moveTo (location);
+		facing = faceDirection;
 	}
 
 	public bool getDestinationReached() {
