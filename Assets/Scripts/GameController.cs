@@ -241,9 +241,6 @@ public class GameController : MonoBehaviour {
 		float x = 0;
 		float y = 0;
 
-		if(!autoMasterOfShips)
-			
-
 		for (int i = 0; i < NumberOfTeams; i++) {	
 			
 			x = (3*roomFloorPadding + NumberOfPuzzles*floorSquaresPerTable - 2f)*Random.value + 0.5f;
