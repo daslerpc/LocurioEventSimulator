@@ -14,7 +14,8 @@ public class GameController : MonoBehaviour {
 	public GameObject tablePrefab;
 	public GameObject masterPrefab;
 
-	public static double timeMultiplier = 1.0;
+	public static double timeMultiplier = 1;
+	public static int timeExponent = 0;
 	static bool paused = false;
 
 	/*********************************/
@@ -25,11 +26,11 @@ public class GameController : MonoBehaviour {
 	public static float teamConsistency = 0.8f;
 
 	public static int NumberOfPuzzles = 5;
-	public static int solveTimes = 15;
+	public static int solveTimes = 15*60;
 	public static int tablesPerPuzzle = 5;
 
 	public static int NumberOfMasters = 1;
-	public static double secondsToProcessPuzzleRequest = 0.5;
+	public static double secondsToProcessPuzzleRequest = 30;
 	public static bool autoMasterOfShips = true;
 	public static int NumberOfHumanTeams = 1;
 
@@ -68,6 +69,8 @@ public class GameController : MonoBehaviour {
 	Canvas HumanPassport;
 	Canvas Controls;
 
+	static Text timeScaleDisplay;
+
 	// Use this for initialization
 	void Start () {
 		Canvas[] canvases = GetComponentsInChildren<Canvas> (true);
@@ -86,25 +89,23 @@ public class GameController : MonoBehaviour {
 		if (!autoMasterOfShips)
 			NumberOfTeams -= NumberOfHumanTeams;
 
+		timeScaleDisplay = Controls.GetComponentsInChildren<Text> ()[0];
+
 		createPuzzles ();
 		buildFloor ();
 		createMastersOfShip ();
 		createTeams ();
 
-		ResultsPane.GetComponentInChildren<ScrollRect> ().GetComponentInChildren<Text> ().text = "\nDid I change this?";
 	}
 
 	// Update is called once per frame
 	void Update () {
 		if (Input.GetKeyDown (KeyCode.Equals)) {
-			timeMultiplier+=2;
+			speedupTime ();
 		}
 
 		if (Input.GetKeyUp (KeyCode.Minus)) {
-			timeMultiplier-=2;
-
-			if (timeMultiplier < 1)
-				timeMultiplier = 1;
+			slowdownTime ();
 		}
 
 		if (Input.GetKeyUp (KeyCode.Space) && ResultsPane.enabled == false) {
@@ -113,7 +114,6 @@ public class GameController : MonoBehaviour {
 		}
 
 		if (Input.GetKeyUp (KeyCode.Escape)) {
-			timeMultiplier = 0;
 			endSim ();
 		}
 
@@ -124,7 +124,7 @@ public class GameController : MonoBehaviour {
 	}
 
 	public static void Reset() {
-		timeMultiplier = 1;
+		timeExponent = 1;
 		paused = false;
 
 		NumberOfTeams = 20;
@@ -270,6 +270,38 @@ public class GameController : MonoBehaviour {
 		}
 	}
 
+	static void speedupTime() {
+		timeExponent+=1;
+		timeMultiplier = Mathf.Pow (2f, timeExponent);
+		setTimeDisplay ();
+	}
+
+	static void slowdownTime(){
+		timeExponent-=1;
+		timeMultiplier = Mathf.Pow (2f, timeExponent);
+		setTimeDisplay ();
+	}
+
+	static void resetTime() {
+		timeExponent = 0;
+		timeMultiplier = Mathf.Pow (2f, timeExponent);
+		setTimeDisplay ();
+	}
+
+	static void setTimeDisplay() {
+		string fractionalTime = timeMultiplier.ToString();
+
+		if (timeExponent == 0)
+			timeScaleDisplay.text = "Time scale: real-time";
+		else {
+			if (timeExponent < 0) {
+				fractionalTime = "1/";
+				fractionalTime += (1f / timeMultiplier).ToString();
+			}
+			timeScaleDisplay.text = "Time scale: " + fractionalTime +"x";
+		}
+	}
+
 	public void addHumanToMasterLine() {
 		master.addHumanToLine ();
 	}
@@ -286,7 +318,7 @@ public class GameController : MonoBehaviour {
 		if (paused)
 			return 0;
 		else
-			return Time.deltaTime * timeMultiplier;
+			return Time.deltaTime * (float) timeMultiplier;
 	}
 
 	public static int getRoomWidth() {
@@ -358,11 +390,11 @@ public class GameController : MonoBehaviour {
 
 	string returnTimeString( double time ) {
 		string timeString = "";
-		string units = " minute";
+		string units = " second";
 
-		if (time < 2) {
-			time *= 60;
-			units = " second";
+		if (time >= 60) {
+			time /= 60;
+			units = " minute";
 		}
 
 		float floatTime = Mathf.Round ( (float) time );
@@ -414,6 +446,7 @@ public class GameController : MonoBehaviour {
 	}
 
 	void endSim() {
+		resetTime ();
 		ResultsPane.GetComponentInChildren<ScrollRect>().GetComponentInChildren<Text>().text = compiledResults ();
 		ResultsPane.enabled = true;
 	}

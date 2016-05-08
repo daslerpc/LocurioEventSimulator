@@ -28,7 +28,7 @@ public class ButtonClick : MonoBehaviour {
 	static int tablesPerPuzzle = 4;
 
 	static bool autoMasterOfShips = true;
-	static double secondsToProcessPuzzleRequest = 0.5;
+	static double secondsToProcessPuzzleRequest = 30;
 	static int numberOfHumanTeams = 1;
 
 	void LoadData() {
@@ -51,11 +51,11 @@ public class ButtonClick : MonoBehaviour {
 		GameController.teamConsistency = consistency;
 
 		GameController.NumberOfPuzzles = puzzNumber;
-		GameController.solveTimes = solveTime;
+		GameController.solveTimes = solveTime * 60;
 		GameController.tablesPerPuzzle = tablesPerPuzzle;
 
 		GameController.autoMasterOfShips = autoMasterOfShips;
-		GameController.secondsToProcessPuzzleRequest = secondsToProcessPuzzleRequest/60.0;
+		GameController.secondsToProcessPuzzleRequest = secondsToProcessPuzzleRequest;
 		GameController.NumberOfHumanTeams = numberOfHumanTeams;
 	}
 
