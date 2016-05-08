@@ -20,7 +20,7 @@ public class MasterofShips : MonoBehaviour {
 
 	Button approve;
 	Button reject;
-	Button ok;
+	//Button ok;
 
 	Text teamNameDisplay;
 	Text puzzleRequestDisplay;
@@ -48,21 +48,23 @@ public class MasterofShips : MonoBehaviour {
 				processing = false;
 			}
 		}
+
+		if (!automatic && waitingTeams.Count > 0 && waitingTeams [0].StartsWith ("human")) {
+			displayHumanPassport ();
+		}
 	}
 
 	public void setPassports ( Canvas passportIn, Canvas humanPassportIn ) {
 		passport = passportIn;
 		humanPassport = humanPassportIn;
 
-		ok = humanPassport.GetComponentInChildren<RawImage> (true).GetComponentInChildren<Button>(true);
+		//ok = humanPassport.GetComponentInChildren<RawImage> (true).GetComponentInChildren<Button>(true);
 
 		RawImage scroll = passport.GetComponentInChildren<RawImage> (true);
 		RawImage[] images = scroll.GetComponentsInChildren<RawImage> (true);
 
 		stamps = new List<RawImage> ();
 		stampSquares = new List<RawImage> ();
-
-		Debug.Log (images.Length);
 
 		for (int i = 0; i < 5; i++) {
 			stampSquares.Add (images [2 * i + 1]);
@@ -127,24 +129,30 @@ public class MasterofShips : MonoBehaviour {
 		hidePassport ();
 	}
 		
-	public Puzzle requestPuzzle( List<Puzzle> teamProgress ) {
+	public Puzzle requestPuzzle( Puzzle requestedPuzzle ) {
 		Puzzle nextPuzzle = null;
 
-		puzzleRequestDisplay.text = "Requesting travel to " + teamProgress[0].getName ();
+		puzzleRequestDisplay.text = "Requesting travel to " + requestedPuzzle.getName ();
 
 		if (!processing) {
-			for (int index = 0; index < teamProgress.Count; index++) {
-				puzzleRequestDisplay.text = "Requesting travel to " + teamProgress[index].getName ();
-				if (teamProgress [index].isFree ()) {
-					nextPuzzle = teamProgress [index];
-
-					if( waitingTeams.Count > 0 )
-						waitingTeams.RemoveAt (0);
-					break;
-				}
+			if (requestedPuzzle.isFree ()) {
+				nextPuzzle = requestedPuzzle;
 			}
 		}
-			
+
+		return nextPuzzle;
+	}
+
+	public Puzzle getStartingPuzzle( List<Puzzle> teamProgress ) {
+		Puzzle nextPuzzle = null;
+
+		for (int index = 0; index < teamProgress.Count; index++) {
+			if (teamProgress [index].isFree ()) {
+				nextPuzzle = teamProgress [index];	
+				break;
+			}
+		}
+
 		return nextPuzzle;
 	}
 
@@ -196,7 +204,29 @@ public class MasterofShips : MonoBehaviour {
 		humanCounter++;
 	}
 
+	public void removeHeadOfLine() {
+		waitingTeams.RemoveAt (0);
+	}
+
+	public void dismissHumanTeamFromMasterLine() {
+		removeHeadOfLine ();
+		hideHumanPassport ();
+	}
+
 	public void setAutomatic ( bool automaticIn ) {
 		automatic = automaticIn;
+	}
+
+	public bool isAutomatic() {
+		return automatic;
+	}
+
+	public string getNameOfRequestingTeam() {
+		string name = "";
+
+		if (waitingTeams.Count > 0)
+			name = waitingTeams [0];
+
+		return name;
 	}
 }

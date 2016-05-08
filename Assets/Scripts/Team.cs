@@ -41,6 +41,10 @@ public class Team : MonoBehaviour {
 
 	MasterofShips master = null;
 	int lineIndex = -1;
+	int puzzleRequestIndex = 0;
+
+	bool approved = false;
+	bool rejected = false;
 
 	void Start () {
 		waitLocation = transform.position;
@@ -71,7 +75,7 @@ public class Team : MonoBehaviour {
 			players.Add ( thisPlayer );
 		}
 
-		currentPuzzle = master.requestPuzzle ( remainingPuzzles );
+		currentPuzzle = master.getStartingPuzzle ( remainingPuzzles );
 
 		if (currentPuzzle != null)
 			EnterState_MovingToPuzzle ();
@@ -189,6 +193,19 @@ public class Team : MonoBehaviour {
 		return master.getLocation () + Vector3.right * (index + 1) * (1 + padding);
 	}
 
+	public void approveRequest() {
+		approved = true;
+	}
+
+	public void rejectRequest() {
+		rejected = true;
+	}
+
+	public void resetRequests() {
+		approved = false;
+		rejected = false;
+	}
+
 	/********************************************/
 	/*			State Machine Functions			*/
 	/********************************************/
@@ -210,7 +227,7 @@ public class Team : MonoBehaviour {
 	/************************************/
 
 	void EnterState_MovingToPuzzle() {
-		Debug.Log (teamName + " entering state MOVING TO PUZZLE");
+		//Debug.Log (teamName + " entering state MOVING TO PUZZLE");
 		currentState = State.MovingToPuzzle;
 		GameObject table = currentPuzzle.addTeam (teamName);
 
@@ -241,7 +258,7 @@ public class Team : MonoBehaviour {
 	/************************************/
 
 	void EnterState_WorkingOnPuzzle() {
-		Debug.Log (teamName + " entering state WORKING ON PUZZLE");
+		//Debug.Log (teamName + " entering state WORKING ON PUZZLE");
 		puzzleProgress = 0;
 		timeToSolve = Mathf.Max(1, GameController.gaussianFloat(currentPuzzle.getSolveTime () * teamSkill, currentPuzzle.getSolveTime () * puzzleSTDev));
 
@@ -282,7 +299,7 @@ public class Team : MonoBehaviour {
 	/************************************/
 
 	void EnterState_MovingToMaster() {
-		Debug.Log (teamName + " entering state MOVING TO MASTER");
+		//Debug.Log (teamName + " entering state MOVING TO MASTER");
 
 		currentState = State.MovingToMaster;
 	}
@@ -317,7 +334,7 @@ public class Team : MonoBehaviour {
 	/************************************/
 
 	void EnterState_WaitingInMasterLine() {
-		Debug.Log (teamName + " entering state WAITING IN MASTER LINE");
+		//Debug.Log (teamName + " entering state WAITING IN MASTER LINE");
 
 		currentState = State.WaitingInMasterLine;
 	}
@@ -347,7 +364,7 @@ public class Team : MonoBehaviour {
 	/************************/
 
 	void EnterState_DealingWithMaster() {
-		Debug.Log (teamName + " entering state DEALING WITH MASTER");
+		//Debug.Log (teamName + " entering state DEALING WITH MASTER");
 		lineIndex = -1;
 		master.startProcessing( teamName, remainingPuzzles );
 		currentState = State.DealingWithMaster;
@@ -356,14 +373,46 @@ public class Team : MonoBehaviour {
 	void ProcessState_DealingWithMaster(){
 		incrementPuzzleWaitTimers ();
 
-		currentPuzzle = master.requestPuzzle ( remainingPuzzles );
+		Puzzle requestedPuzzle = remainingPuzzles [puzzleRequestIndex];
 
-		if (currentPuzzle != null ) {
-			master.stopProcessing ();
-			EnterState_MovingToPuzzle ();
+		currentPuzzle = master.requestPuzzle ( requestedPuzzle );
+
+		if (master.isAutomatic ()) {
+			if (currentPuzzle != null) {
+				requestApproved ();
+			} else {
+				incrementPuzzleRequestCounter ();
+			}
+		} else {  // manual team processing
+
+			if (rejected == true) {
+				resetRequests ();
+				incrementPuzzleRequestCounter ();
+			} else if (approved == true) {
+				resetRequests ();
+
+				if (currentPuzzle != null)
+					requestApproved ();
+				else {
+					incrementPuzzleRequestCounter ();
+					GameController.masterMadeMistake ();
+				}
+			}
 		}
 	}
 
+	void requestApproved() {
+		puzzleRequestIndex = 0;
+		master.stopProcessing ();
+		master.removeHeadOfLine ();
+		EnterState_MovingToPuzzle ();
+	}
+
+	void incrementPuzzleRequestCounter() {
+		puzzleRequestIndex++;
+		if (puzzleRequestIndex == remainingPuzzles.Count)
+			puzzleRequestIndex = 0;
+	}
 
 
 
@@ -373,7 +422,7 @@ public class Team : MonoBehaviour {
 	/************************/
 
 	void EnterState_FinishedWithEvent() {
-		Debug.Log (teamName + " entering state FINISHED WITH EVENT");
+		//Debug.Log (teamName + " entering state FINISHED WITH EVENT");
 
 		goHome ();
 		GameController.reportTeamDone ();

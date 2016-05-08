@@ -33,6 +33,8 @@ public class GameController : MonoBehaviour {
 	public static bool autoMasterOfShips = true;
 	public static int NumberOfHumanTeams = 1;
 
+	public static int masterMistakes = 0;
+
 	/*********************************/
 	/*		CALCULATED VALUES	     */
 	/*********************************/
@@ -80,6 +82,9 @@ public class GameController : MonoBehaviour {
 		Controls = canvases [4];
 
 		Controls.enabled = true;
+
+		if (!autoMasterOfShips)
+			NumberOfTeams -= NumberOfHumanTeams;
 
 		createPuzzles ();
 		buildFloor ();
@@ -132,6 +137,8 @@ public class GameController : MonoBehaviour {
 		autoMasterOfShips = true;
 		NumberOfHumanTeams = 1;
 
+		masterMistakes = 0;
+
 		teamsDone = 0;
 		timesWaited = 0;
 
@@ -167,7 +174,6 @@ public class GameController : MonoBehaviour {
 
 		for (int i = 0; i < NumberOfPuzzles; i++) {
 			puzzles.Add (new Puzzle ());	
-			//puzzles [i].setName ("Puzzle " + i);
 			puzzles [i].setID (i);
 
 			switch (i) {
@@ -235,6 +241,9 @@ public class GameController : MonoBehaviour {
 		float x = 0;
 		float y = 0;
 
+		if(!autoMasterOfShips)
+			
+
 		for (int i = 0; i < NumberOfTeams; i++) {	
 			
 			x = (3*roomFloorPadding + NumberOfPuzzles*floorSquaresPerTable - 2f)*Random.value + 0.5f;
@@ -264,6 +273,10 @@ public class GameController : MonoBehaviour {
 
 	public void addHumanToMasterLine() {
 		master.addHumanToLine ();
+	}
+
+	public void dismissHumanTeamFromMasterLine() {
+		master.dismissHumanTeamFromMasterLine ();
 	}
 
 	public static List<Puzzle> getPuzzles() {
@@ -303,7 +316,7 @@ public class GameController : MonoBehaviour {
 
 	public static void reportTeamDone() {
 		teamsDone++;
-		Debug.Log(teamsDone + " of " + NumberOfTeams + " teams done.");
+		//Debug.Log(teamsDone + " of " + NumberOfTeams + " teams done.");
 	}
 
 
@@ -360,6 +373,42 @@ public class GameController : MonoBehaviour {
 			units += "s";
 
 		return timeString + units;
+	}
+
+	public void approveRequest() {
+		string name = master.getNameOfRequestingTeam ();
+		Team requestingTeam = getRequestingTeam (name);
+
+		if (requestingTeam == null)
+			Debug.Log ("ERROR: attempting to accept request.  Team not found.");
+		else 
+			requestingTeam.approveRequest ();
+	}
+
+	public void rejectRequest() {
+		string name = master.getNameOfRequestingTeam ();
+		Team requestingTeam = getRequestingTeam (name);
+
+		if (requestingTeam == null)
+			Debug.Log ("ERROR: attempting to accept request.  Team not found.");
+		else 
+			requestingTeam.rejectRequest ();
+	}
+
+	Team getRequestingTeam( string name ) {
+		Team requestingTeam = null;
+
+		for (int i = 0; i < teams.Count; i++)
+			if (teams [i].getName ().Equals (name)) {
+				requestingTeam = teams [i];
+				break;
+			}
+		
+		return requestingTeam;
+	}
+
+	public static void masterMadeMistake() {
+		masterMistakes++;
 	}
 
 	void endSim() {
