@@ -90,6 +90,8 @@ public class GameController : MonoBehaviour {
 		buildFloor ();
 		createMastersOfShip ();
 		createTeams ();
+
+		ResultsPane.GetComponentInChildren<ScrollRect> ().GetComponentInChildren<Text> ().text = "\nDid I change this?";
 	}
 
 	// Update is called once per frame
@@ -369,6 +371,9 @@ public class GameController : MonoBehaviour {
 		if (time > 1)
 			units += "s";
 
+		while (timeString.Length < 5)
+			timeString = " " + timeString;
+
 		return timeString + units;
 	}
 
@@ -409,21 +414,43 @@ public class GameController : MonoBehaviour {
 	}
 
 	void endSim() {
-		Text[] textFields = ResultsPane.GetComponentsInChildren<Text> ();
+		ResultsPane.GetComponentInChildren<ScrollRect>().GetComponentInChildren<Text>().text = compiledResults ();
+		ResultsPane.enabled = true;
+	}
 
-		textFields [4].text = returnTimeString(fastestPuzzleTime);
-		textFields [6].text = returnTimeString(slowestPuzzleTime);
-		textFields [8].text = returnTimeString(averagePuzzleTime);
+	string compiledResults() {
+		string results = "\n";
+
+		string fastestCompletion = "Fastest Completion:\t";
+		string slowestCompletion = "Slowest Completion:\t";
+		string averageCompletion = "Average Completion:\t";
+
+		string shortestWait = "Shortest Wait:\t";
+		string longestWait = "Longest Wait:\t";
+		string averageWait =  "Average Wait:\t";
+
+		string mistakes = "MoS Mistakes:\t";
+
+		results += fastestCompletion + returnTimeString (fastestPuzzleTime) + "\n";
+		results += slowestCompletion + returnTimeString (slowestPuzzleTime) + "\n";
+		results += averageCompletion + returnTimeString (averagePuzzleTime) + "\n";	
+
+		results += "\n";
 
 		// This means all waits were 0, which were ignored during the run
 		if (shortestPuzzleWait > longestPuzzleWait)
 			shortestPuzzleWait = 0;
-		
-		textFields [10].text = returnTimeString(shortestPuzzleWait);
-		textFields [12].text = returnTimeString(longestPuzzleWait);
-		textFields [14].text = returnTimeString(averagePuzzleWait/(float)Mathf.Max(1, timesWaited));
 
-		ResultsPane.enabled = true;
+		results += shortestWait + returnTimeString (shortestPuzzleWait) + "\n";
+		results += longestWait + returnTimeString (longestPuzzleWait) + "\n";	
+		results += averageWait + returnTimeString (averagePuzzleWait/(float)Mathf.Max(1, timesWaited)) + "\n";	
+
+		if (!autoMasterOfShips) {
+			results += "\n";
+			results += mistakes + masterMistakes.ToString () + "\n";
+		}
+
+		return results;
 	}
 }
  
