@@ -20,7 +20,6 @@ public class MasterofShips : MonoBehaviour {
 
 	Button approve;
 	Button reject;
-	//Button ok;
 
 	Text teamNameDisplay;
 	Text puzzleRequestDisplay;
@@ -57,8 +56,6 @@ public class MasterofShips : MonoBehaviour {
 	public void setPassports ( Canvas passportIn, Canvas humanPassportIn ) {
 		passport = passportIn;
 		humanPassport = humanPassportIn;
-
-		//ok = humanPassport.GetComponentInChildren<RawImage> (true).GetComponentInChildren<Button>(true);
 
 		RawImage scroll = passport.GetComponentInChildren<RawImage> (true);
 		RawImage[] images = scroll.GetComponentsInChildren<RawImage> (true);
@@ -115,13 +112,13 @@ public class MasterofShips : MonoBehaviour {
 		timeToProcess = time;
 	}
 
-	public void startProcessing( string teamName, List<Puzzle> teamProgress ) {
+	void startProcessing( string teamName, List<Puzzle> teamProgress ) {
 		processing = true;
 		displayPassport (teamName, teamProgress);
 	}
 
-	public bool getProcessingStatus() {
-		return !processing;
+	public bool isProcessing() {
+		return processing;
 	}
 
 	public void stopProcessing() {
@@ -129,17 +126,16 @@ public class MasterofShips : MonoBehaviour {
 		hidePassport ();
 	}
 		
-	public Puzzle requestPuzzle( Puzzle requestedPuzzle ) {
+	public Puzzle requestPuzzle( Puzzle requestedPuzzle, string teamName, List<Puzzle> teamProgress ) {
 		Puzzle nextPuzzle = null;
+		startProcessing (teamName, teamProgress);
 
 		puzzleRequestDisplay.text = "Requesting travel to " + requestedPuzzle.getName ();
 
-		if (!processing) {
-			if (requestedPuzzle.isFree ()) {
-				nextPuzzle = requestedPuzzle;
-			}
+		if (requestedPuzzle.isFree ()) {
+			nextPuzzle = requestedPuzzle;
 		}
-
+			
 		return nextPuzzle;
 	}
 

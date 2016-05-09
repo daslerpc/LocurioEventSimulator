@@ -234,7 +234,7 @@ public class Team : MonoBehaviour {
 		rejected = true;
 	}
 
-	public void resetRequests() {
+	public void resetRequestResponses() {
 		approved = false;
 		rejected = false;
 	}
@@ -428,53 +428,54 @@ public class Team : MonoBehaviour {
 
 	void EnterState_DealingWithMaster() {
 		//Debug.Log (teamName + " entering state DEALING WITH MASTER");
+
+		currentPuzzle = master.requestPuzzle ( remainingPuzzles [puzzleRequestIndex], teamName, remainingPuzzles );
+
 		lineIndex = -1;
-		master.startProcessing( teamName, remainingPuzzles );
 		currentState = State.DealingWithMaster;
 	}
 
 	void ProcessState_DealingWithMaster(){
 		incrementPuzzleWaitTimers ();
 
-		Puzzle requestedPuzzle = remainingPuzzles [puzzleRequestIndex];
-
-		currentPuzzle = master.requestPuzzle ( requestedPuzzle );
-
 		if (master.isAutomatic ()) {
-			if (currentPuzzle != null) {
-				requestApproved ();
-			} else {
-				incrementPuzzleRequestCounter ();
+			if (!master.isProcessing ()){
+				if (currentPuzzle != null) {
+					handleApprovedRequest ();
+				} else {
+					incrementPuzzleRequest ();
+				}
 			}
 		} else {  // manual team processing
 
 			if (rejected == true) {
-				resetRequests ();
-				incrementPuzzleRequestCounter ();
+				resetRequestResponses ();
+				incrementPuzzleRequest ();
 			} else if (approved == true) {
-				resetRequests ();
+				resetRequestResponses ();
 
 				if (currentPuzzle != null)
-					requestApproved ();
+					handleApprovedRequest ();
 				else {
-					incrementPuzzleRequestCounter ();
+					incrementPuzzleRequest ();
 					GameController.masterMadeMistake ();
 				}
 			}
 		}
 	}
 
-	void requestApproved() {
+	void handleApprovedRequest() {
 		puzzleRequestIndex = 0;
 		master.stopProcessing ();
 		master.removeHeadOfLine ();
 		EnterState_MovingToPuzzle ();
 	}
 
-	void incrementPuzzleRequestCounter() {
+	void incrementPuzzleRequest() {
 		puzzleRequestIndex++;
 		if (puzzleRequestIndex == remainingPuzzles.Count)
 			puzzleRequestIndex = 0;
+		currentPuzzle = master.requestPuzzle ( remainingPuzzles [puzzleRequestIndex], teamName, remainingPuzzles );
 	}
 
 
