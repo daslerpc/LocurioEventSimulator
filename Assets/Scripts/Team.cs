@@ -50,8 +50,8 @@ public class Team : MonoBehaviour {
 	public Canvas progressBarCanvas;
 	public Slider progressBar;
 	public Image fillImage;
-	Color emptyProgress = new Color(3f, 0f, 0f);
-	Color fullProgress = new Color(0f, 2f, 0f);
+	Color emptyProgress = new Color(3f, 0f, 0f, 1f);
+	Color fullProgress = new Color(0f, 2f, 0f, 1f);
 
 
 	void Start () {
@@ -327,7 +327,9 @@ public class Team : MonoBehaviour {
 			slowestSolve = timeToSolve;
 
 		GameController.reportWaitPerPuzzle (waitPerPuzzle);
+		GameController.reportMasterWaitTime (waitOnMaster);
 		waitPerPuzzle = 0;
+		waitOnMaster = 0;
 
 		startProgressBar ();
 
@@ -491,7 +493,6 @@ public class Team : MonoBehaviour {
 		goHome ();
 		GameController.reportTeamDone ();
 		GameController.reportCompletionTime (timeSpentWaiting + timeSpentSolving);
-		GameController.reportMasterWaitTime ( waitOnMaster );
 
 		currentState = State.FinishedWithEvent;
 	}

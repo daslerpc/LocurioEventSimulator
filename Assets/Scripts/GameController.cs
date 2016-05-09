@@ -45,7 +45,7 @@ public class GameController : MonoBehaviour {
 	int maxSupportedTeams = 0;
 
 	static int teamsDone = 0;
-	static int timesWaited = 0;
+	static int timesWaited = -1;  // Ignores starting puzzle as there is no waiting
 
 	static double fastestPuzzleTime = float.MaxValue;
 	static double slowestPuzzleTime = 0;
@@ -142,7 +142,7 @@ public class GameController : MonoBehaviour {
 		masterMistakes = 0;
 
 		teamsDone = 0;
-		timesWaited = 0;
+		timesWaited = -1;
 
 		fastestPuzzleTime = double.MaxValue;
 		slowestPuzzleTime = 0;
@@ -415,7 +415,7 @@ public class GameController : MonoBehaviour {
 		float floatTime = Mathf.Round ( (float) time );
 		timeString = floatTime.ToString ();
 
-		if (time > 1)
+		if (floatTime > 1)
 			units += "s";
 
 		while (timeString.Length < 5)
@@ -473,9 +473,13 @@ public class GameController : MonoBehaviour {
 		string slowestCompletion = "Slowest Completion:\t";
 		string averageCompletion = "Average Completion:\t";
 
-		string shortestWait = "Shortest Wait:\t";
-		string longestWait = "Longest Wait:\t";
-		string averageWait =  "Average Wait:\t";
+		string shortestWait = "Shortest Wait for Puzzle:\t";
+		string longestWait = "Longest Wait for Puzzle:\t";
+		string averageWait =  "Average Wait for Puzzle:\t";
+
+		string shortestLineWait = "Shortest Wait for MoS:\t";
+		string longestLineWait = "Longest Wait for MoS:\t";
+		string averageLineWait =  "Average Wait for MoS:\t";
 
 		string mistakes = "MoS Mistakes:\t";
 
@@ -492,6 +496,12 @@ public class GameController : MonoBehaviour {
 		results += shortestWait + returnTimeString (shortestPuzzleWait) + "\n";
 		results += longestWait + returnTimeString (longestPuzzleWait) + "\n";	
 		results += averageWait + returnTimeString (averagePuzzleWait/(float)Mathf.Max(1, timesWaited)) + "\n";	
+
+		results += "\n";
+
+		results += shortestLineWait + returnTimeString (shortestMasterWait) + "\n";
+		results += longestLineWait + returnTimeString (longestMasterWait) + "\n";	
+		results += averageLineWait + returnTimeString (averageMasterWait/(float)Mathf.Max(1, timesWaited)) + "\n";	
 
 		if (!autoMasterOfShips) {
 			results += "\n";
