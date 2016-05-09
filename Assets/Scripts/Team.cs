@@ -50,8 +50,8 @@ public class Team : MonoBehaviour {
 	public Canvas progressBarCanvas;
 	public Slider progressBar;
 	public Image fillImage;
-	Color emptyProgress = Color.red;
-	Color fullProgress = Color.green;
+	Color emptyProgress = new Color(3f, 0f, 0f);
+	Color fullProgress = new Color(0f, 2f, 0f);
 
 
 	void Start () {
