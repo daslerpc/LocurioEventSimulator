@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.UI;
 
 public class Team : MonoBehaviour {
 
@@ -46,8 +47,16 @@ public class Team : MonoBehaviour {
 	bool approved = false;
 	bool rejected = false;
 
+	public Canvas progressBarCanvas;
+	public Slider progressBar;
+	public Image fillImage;
+	Color emptyProgress = Color.red;
+	Color fullProgress = Color.green;
+
+
 	void Start () {
 		waitLocation = transform.position;
+		transform.position = waitLocation;
 
 		List<int> indeces = new List<int>();
 
@@ -74,6 +83,9 @@ public class Team : MonoBehaviour {
 			thisPlayer.SetColor (colorHue);
 			players.Add ( thisPlayer );
 		}
+
+		hideProgressBar ();
+
 
 		currentPuzzle = master.getStartingPuzzle ( remainingPuzzles );
 
@@ -157,23 +169,34 @@ public class Team : MonoBehaviour {
 	}
 
 	public void goToLocation( Vector3 destination ) {
+		Vector3[] positions = getWiggledPositions (destination);
+		transform.position = destination;
+
 		for (int i = 0; i < 4; i++) {
-			float wiggle = 0.5f;
-			float x = Random.Range (-wiggle, wiggle);
-			float y = Random.Range (-wiggle, wiggle);
-			Vector3 location = destination + new Vector3 (x, y, 0);
-			players [i].moveTo (location);
+			players [i].moveTo (positions[i]);
 		}
 	}
 
 	public void goToLocation( Vector3 destination, Vector2 facing ) {
+		Vector3[] positions = getWiggledPositions (destination);
+		transform.position = destination;
+
+		for (int i = 0; i < 4; i++) {
+			players [i].moveTo (positions[i], facing);
+		}
+	}
+
+	Vector3[] getWiggledPositions( Vector3 destination ) {
+		Vector3[] positions = new Vector3[4];
+
 		for (int i = 0; i < 4; i++) {
 			float wiggle = 0.5f;
 			float x = Random.Range (-wiggle, wiggle);
 			float y = Random.Range (-wiggle, wiggle);
-			Vector3 location = destination + new Vector3 (x, y, 0);
-			players [i].moveTo (location, facing);
+			positions[i] = destination + new Vector3 (x, y, 0);
 		}
+
+		return positions;
 	}
 
 	public bool destinationReached() {
@@ -216,6 +239,21 @@ public class Team : MonoBehaviour {
 		rejected = false;
 	}
 
+	void startProgressBar() {
+		progressBar.value = 0;
+		progressBarCanvas.enabled = true;
+	}
+
+	void hideProgressBar() {
+		progressBar.value = 0;
+		progressBarCanvas.enabled = false;
+	}
+
+	void updateProgressBar() {
+		progressBar.value = (float) puzzleProgress / (float) timeToSolve;
+		fillImage.color = Color.Lerp (emptyProgress, fullProgress, progressBar.value);
+	}
+
 	/********************************************/
 	/*			State Machine Functions			*/
 	/********************************************/
@@ -241,6 +279,8 @@ public class Team : MonoBehaviour {
 		currentState = State.MovingToPuzzle;
 		GameObject table = currentPuzzle.addTeam (teamName);
 
+		transform.position = table.transform.position;
+
 		Transform[] positions = table.GetComponentsInChildren<Transform> ();
 		Vector3 position;
 		Vector3 facing3;
@@ -264,7 +304,7 @@ public class Team : MonoBehaviour {
 	}
 		
 	void ProcessState_MovingToPuzzle(){
-		if (destinationReached ())
+		if (destinationReached ()) 
 			EnterState_WorkingOnPuzzle ();
 	}
 
@@ -289,16 +329,21 @@ public class Team : MonoBehaviour {
 		GameController.reportWaitPerPuzzle (waitPerPuzzle);
 		waitPerPuzzle = 0;
 
+		startProgressBar ();
+
 		currentState = State.WorkingOnPuzzle;
 	}
 
 	void ProcessState_WorkingOnPuzzle(){
 		incrementSolveTimers ();
 
+		updateProgressBar ();
+
 		if (puzzleProgress >= timeToSolve) {
 			currentPuzzle.removeTeam (teamName);
 			remainingPuzzles.Remove (currentPuzzle);
 			currentPuzzle = null;
+			hideProgressBar ();
 
 			if (remainingPuzzles.Count == 0)
 				EnterState_FinishedWithEvent ();
