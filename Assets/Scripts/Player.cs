@@ -11,6 +11,7 @@ public class Player : MonoBehaviour {
 	}
 
 	public float moveSpeed;
+	float speedMultiplier = 1;
 
 	public Animator anim;
 
@@ -61,7 +62,7 @@ public class Player : MonoBehaviour {
 		float horiz = 0;
 		float vert = 0;
 
-		float velocity = moveSpeed * (float) GameController.getDeltaTime ();
+		float velocity = moveSpeed * speedMultiplier * Time.deltaTime;
 
 		if (!transform.Equals (moveTarget)) {
 			// move to target
@@ -143,6 +144,10 @@ public class Player : MonoBehaviour {
 
 	public void SetColor( float newHue ) {
 		hue = newHue;
+	}
+
+	public void setSpeedMultiplier( float mult ) {
+		speedMultiplier = mult;
 	}
 
 }

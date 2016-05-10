@@ -56,11 +56,14 @@ public class GameController : MonoBehaviour {
 	static double shortestMasterWait = double.MaxValue;
 	static double longestMasterWait = 0;
 	static double averageMasterWait = 0;
+	static double fastestCompletionTime = float.MaxValue;
+	static double slowestCompletionTime = 0;
+	static double averageCompletionTime = 0;
 
 	/*********************************/
 
 	static List<Puzzle> puzzles;
-	List<Team> teams;
+	static List<Team> teams;
 	MasterofShips master;
 
 	Canvas PauseOverlay;
@@ -153,6 +156,9 @@ public class GameController : MonoBehaviour {
 		shortestMasterWait = double.MaxValue;
 		longestMasterWait = 0;
 		averageMasterWait = 0;
+		fastestCompletionTime = double.MaxValue;
+		slowestCompletionTime = 0;
+		averageCompletionTime = 0;
 	} 
 
 	void createMastersOfShip() {
@@ -286,21 +292,32 @@ public class GameController : MonoBehaviour {
 	}
 
 	static void speedupTime() {
-		timeExponent = Mathf.Min( timeExponent + 1, 6);
+		timeExponent = Mathf.Min( timeExponent + 1, 10);
 		timeMultiplier = Mathf.Pow (2f, timeExponent);
 		setTimeDisplay ();
+
+		setTeamSpeedMultipliers (timeExponent);
 	}
 
 	static void slowdownTime(){
 		timeExponent = Mathf.Max( timeExponent - 1, -2);
 		timeMultiplier = Mathf.Pow (2f, timeExponent);
 		setTimeDisplay ();
+
+		setTeamSpeedMultipliers (timeExponent);
 	}
 
 	static void resetTime() {
 		timeExponent = 0;
 		timeMultiplier = 1;
 		setTimeDisplay ();
+
+		setTeamSpeedMultipliers (timeExponent);
+	}
+
+	static void setTeamSpeedMultipliers( float mult ) {
+		for (int i = 0; i < teams.Count; i++)
+			teams [i].setSpeedMultiplier (Mathf.Max(1, mult));
 	}
 
 	static void setTimeDisplay() {
@@ -367,7 +384,7 @@ public class GameController : MonoBehaviour {
 
 
 
-	public static void reportCompletionTime( double time) {
+	public static void reportTotalPuzzlingTime( double time) {
 		if (time < fastestPuzzleTime)
 			fastestPuzzleTime = time ;
 		
@@ -403,6 +420,16 @@ public class GameController : MonoBehaviour {
 		averageMasterWait += wait;
 	}
 
+	public static void reportCompletionTime (double time) {
+		if (time < fastestCompletionTime)
+			fastestCompletionTime = time ;
+
+		if (time > slowestCompletionTime)
+			slowestCompletionTime = time;
+
+		averageCompletionTime += time/(double) NumberOfTeams;
+	}
+
 	string returnTimeString( double time ) {
 		string timeString = "";
 		string units = " second";
@@ -418,10 +445,12 @@ public class GameController : MonoBehaviour {
 		if (floatTime > 1)
 			units += "s";
 
-		while (timeString.Length < 5)
+		timeString += units + " ";
+
+		while (timeString.Length < 15)
 			timeString = " " + timeString;
 
-		return timeString + units;
+		return timeString;
 	}
 
 	public void approveRequest() {
@@ -469,23 +498,33 @@ public class GameController : MonoBehaviour {
 	string compiledResults() {
 		string results = "\n";
 
-		string fastestCompletion = "Fastest Completion:\t";
-		string slowestCompletion = "Slowest Completion:\t";
-		string averageCompletion = "Average Completion:\t";
+		string fastestCompletion = "Fastest Completion Time:";
+		string slowestCompletion = "Slowest Completion Time:";
+		string averageCompletion = "Average Completion Time:";
 
-		string shortestWait = "Shortest Wait for Puzzle:\t";
-		string longestWait = "Longest Wait for Puzzle:\t";
-		string averageWait =  "Average Wait for Puzzle:\t";
+		string fastestPuzzling = "Fastest Total Solving Time:";
+		string slowestPuzzling = "Slowest Total Solving Time:";
+		string averagePuzzling = "Average Total Solving Time:";
 
-		string shortestLineWait = "Shortest Wait for MoS:\t";
-		string longestLineWait = "Longest Wait for MoS:\t";
-		string averageLineWait =  "Average Wait for MoS:\t";
+		string shortestWait = "Shortest Wait for Puzzle:";
+		string longestWait = "Longest Wait for Puzzle:";
+		string averageWait =  "Average Wait for Puzzle:";
+
+		string shortestLineWait = "Shortest Wait in MoS Line:";
+		string longestLineWait = "Longest Wait in MoS Line:";
+		string averageLineWait = "Average Wait in MoS Line:";
 
 		string mistakes = "MoS Mistakes:\t";
 
-		results += fastestCompletion + returnTimeString (fastestPuzzleTime) + "\n";
-		results += slowestCompletion + returnTimeString (slowestPuzzleTime) + "\n";
-		results += averageCompletion + returnTimeString (averagePuzzleTime) + "\n";	
+		results += fastestCompletion + returnTimeString (fastestCompletionTime) + "\n";
+		results += slowestCompletion + returnTimeString (slowestCompletionTime) + "\n";
+		results += averageCompletion + returnTimeString (averageCompletionTime) + "\n";	
+
+		results += "\n";
+
+		results += fastestPuzzling + returnTimeString (fastestPuzzleTime) + "\n";
+		results += slowestPuzzling + returnTimeString (slowestPuzzleTime) + "\n";
+		results += averagePuzzling + returnTimeString (averagePuzzleTime) + "\n";	
 
 		results += "\n";
 

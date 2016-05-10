@@ -28,6 +28,7 @@ public class Team : MonoBehaviour {
 	double timeSpentSolving = 0;
 	double waitPerPuzzle = 0;  // tracks time waited on each puzzle
 	double waitOnMaster = 0;
+	double totalTime = 0;
 
 	double quickestSolve = double.MaxValue;
 	double slowestSolve = 0;
@@ -108,6 +109,8 @@ public class Team : MonoBehaviour {
 		FinishedWithEvent
 	*/
 	void Update () {
+		totalTime += GameController.getDeltaTime ();
+
 		switch (currentState) {
 		case State.MovingToPuzzle:
 			ProcessState_MovingToPuzzle ();
@@ -130,20 +133,11 @@ public class Team : MonoBehaviour {
 		}
 	}
 
-	/*
-	Puzzle findOpenPuzzle() {
-		Puzzle nextPuzzle = null;
-
-		for (int index = 0; index < remainingPuzzles.Count; index++) {
-			if (remainingPuzzles [index].isFree ()) {
-				nextPuzzle = remainingPuzzles [index];
-				break;
-			}
-		}
-
-		return nextPuzzle;
+	public void setSpeedMultiplier(float mult) {
+		for (int i = 0; i < players.Count; i++)
+			players [i].setSpeedMultiplier(mult);
 	}
-*/
+
 	public void setName(string newName) {
 		teamName = newName;
 	}
@@ -492,7 +486,8 @@ public class Team : MonoBehaviour {
 
 		goHome ();
 		GameController.reportTeamDone ();
-		GameController.reportCompletionTime (timeSpentWaiting + timeSpentSolving);
+		GameController.reportTotalPuzzlingTime (timeSpentWaiting + timeSpentSolving);
+		GameController.reportCompletionTime (totalTime);
 
 		currentState = State.FinishedWithEvent;
 	}
